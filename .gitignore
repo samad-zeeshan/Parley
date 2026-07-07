@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+# runtime state
+*.db
+*.sqlite
+audit.jsonl
+# large generated audio and downloaded models stay out of git
+models/
+eval/audio/
+eval/out/
+.env

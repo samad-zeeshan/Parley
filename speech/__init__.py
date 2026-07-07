@@ -1,0 +1,1 @@
+"""Majlis speech package."""
