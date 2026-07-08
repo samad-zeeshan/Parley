@@ -61,6 +61,23 @@ What the transcripts show:
   do not have on this machine. We also did not try whisper.cpp, because faster-whisper already gave us
   the same model family on CPU.
 
+The same transcripts rescored after number normalization (`uv run python -m eval.smoke rescore`, which
+runs `speech/normalize.py` on both reference and hypothesis):
+
+| model | English | Gulf | MSA | code-switched |
+|---|---|---|---|---|
+| tiny | 0.095 | 0.818 | 0.829 | 0.692 |
+| base | 0.095 | 0.636 | 0.571 | 1.077 |
+| small | 0.024 | 0.152 | 0.429 | 0.923 |
+| small + prompt | 0.000 | 0.121 | 0.400 | 0.846 |
+| medium | 0.000 | 0.121 | 0.286 | 0.846 |
+| medium + prompt | 0.000 | 0.091 | 0.229 | 0.692 |
+| large-v3-turbo + prompt | 0.000 | 0.121 | 0.143 | 0.462 |
+
+English errors were almost all number formatting. For Arabic the normalized WER can be higher than the
+raw WER: normalization turns "مية وعشرين ألف" (three words) into one token, so one wrong number is one
+error over fewer reference words. The ranking of models does not change.
+
 Decision: faster-whisper small, int8, with the domain prompt, is the default (`MAJLIS_ASR_MODEL=small`).
 It is the fastest model with usable Gulf WER. medium is 2.3 times slower for a gain that is mostly on
 MSA; it is one environment variable away (`MAJLIS_ASR_MODEL=medium`) for anyone with a faster CPU. No

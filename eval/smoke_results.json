@@ -16,7 +16,8 @@
           "detected": "en",
           "ref": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina.",
           "hyp": "Hi, I would like to book a viewing for a two-bedroom flat and do by Marina.",
-          "wer": 0.188
+          "wer": 0.188,
+          "wer_normalized": 0.188
         },
         {
           "id": "en-02",
@@ -24,7 +25,8 @@
           "detected": "en",
           "ref": "My budget is one hundred and twenty thousand dirhams a year.",
           "hyp": "My budget is 120,000 grams a year.",
-          "wer": 0.545
+          "wer": 0.545,
+          "wer_normalized": 0.143
         },
         {
           "id": "en-03",
@@ -32,7 +34,8 @@
           "detected": "en",
           "ref": "Is there anything on Thursday between four and six in the afternoon?",
           "hyp": "Is there anything on Thursday between 4 and 6 in the afternoon?",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-04",
@@ -40,7 +43,8 @@
           "detected": "en",
           "ref": "My number is zero five zero one two three four five six seven.",
           "hyp": "My number is 0501234567.",
-          "wer": 0.769
+          "wer": 0.769,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-05",
@@ -48,7 +52,8 @@
           "detected": "en",
           "ref": "Yes please, confirm the booking.",
           "hyp": "Yes, please confirm the booking.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-06",
@@ -56,7 +61,8 @@
           "detected": "en",
           "ref": "Actually, cancel that booking please.",
           "hyp": "Actually, cancel that booking please.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-01",
@@ -64,7 +70,8 @@
           "detected": "ar",
           "ref": "أبي أحجز معاينة لشقة في دبي مارينا",
           "hyp": "أبي أخجزم عينة لشقة في دوبيم عارينة",
-          "wer": 0.571
+          "wer": 0.571,
+          "wer_normalized": 0.571
         },
         {
           "id": "gulf-02",
@@ -72,7 +79,8 @@
           "detected": "ar",
           "ref": "أبغي شقة غرفتين في البرشاء والميزانية مية وعشرين ألف درهم",
           "hyp": "أبضي شققة غرفةين في البرشاء والميزانية ميطن وعشرينة الفديرها",
-          "wer": 0.7
+          "wer": 0.7,
+          "wer_normalized": 0.75
         },
         {
           "id": "gulf-03",
@@ -80,7 +88,8 @@
           "detected": "ar",
           "ref": "يوم الخميس الساعة أربعة العصر زين",
           "hyp": "يوم الخميس ساعة أربعة العصري زين",
-          "wer": 0.333
+          "wer": 0.333,
+          "wer_normalized": 0.333
         },
         {
           "id": "gulf-04",
@@ -88,7 +97,8 @@
           "detected": "ar",
           "ref": "رقمي صفر خمسة صفر واحد اثنين ثلاثة أربعة خمسة ستة سبعة",
           "hyp": "أغقيمي صفر خمسة صفر واخد نفنين ثلاثة أربعة خمسة ستتنسبعة",
-          "wer": 0.455
+          "wer": 0.455,
+          "wer_normalized": 3.0
         },
         {
           "id": "gulf-05",
@@ -96,7 +106,8 @@
           "detected": "ar",
           "ref": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر",
           "hyp": "لما أبي هذا الموعدة عطني ونوقت ثاني عقب الزهر",
-          "wer": 0.5
+          "wer": 0.5,
+          "wer_normalized": 0.667
         },
         {
           "id": "gulf-06",
@@ -104,7 +115,8 @@
           "detected": "ar",
           "ref": "خلاص تمام أكد الحجز",
           "hyp": "في الاصو تماماً أكد الحج",
-          "wer": 1.0
+          "wer": 1.0,
+          "wer_normalized": 1.0
         },
         {
           "id": "msa-01",
@@ -112,7 +124,8 @@
           "detected": "ar",
           "ref": "أريد حجز موعد لمعاينة شقة في أبوظبي",
           "hyp": "وريد حجز موعد لمعاية نتشققة في أبوه بي",
-          "wer": 0.714
+          "wer": 0.714,
+          "wer_normalized": 0.714
         },
         {
           "id": "msa-02",
@@ -120,7 +133,8 @@
           "detected": "ar",
           "ref": "أبحث عن شقة من ثلاث غرف نوم في جزيرة الريم",
           "hyp": "أبحث عن شقق من ثلاثيهر في نوم في جزيرة الرين",
-          "wer": 0.4
+          "wer": 0.4,
+          "wer_normalized": 0.4
         },
         {
           "id": "msa-03",
@@ -128,7 +142,8 @@
           "detected": "ar",
           "ref": "ميزانيتي مئتا ألف درهم سنويا",
           "hyp": "ميزانية من اتاء الفدر حمين سنوية",
-          "wer": 1.2
+          "wer": 1.2,
+          "wer_normalized": 1.5
         },
         {
           "id": "msa-04",
@@ -136,7 +151,8 @@
           "detected": "ar",
           "ref": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا",
           "hyp": "هل يوجد موعد يوم الاخد في الساعة العاشرة صباحاً",
-          "wer": 0.111
+          "wer": 0.111,
+          "wer_normalized": 0.333
         },
         {
           "id": "msa-05",
@@ -144,7 +160,8 @@
           "detected": "ar",
           "ref": "نعم أؤكد الحجز من فضلك",
           "hyp": "نعم أكتد الحجز من فضلكة",
-          "wer": 0.4
+          "wer": 0.4,
+          "wer_normalized": 0.4
         },
         {
           "id": "msa-06",
@@ -152,7 +169,8 @@
           "detected": "ar",
           "ref": "رقم هاتفي صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلاثة",
           "hyp": "أقمها تفيصف رخم ستخم ستي تساعة ثمانية سبعة ستتخم ستأربعة ثلاثة",
-          "wer": 0.75
+          "wer": 0.75,
+          "wer_normalized": 3.333
         },
         {
           "id": "mix-01",
@@ -160,7 +178,8 @@
           "detected": "ar",
           "ref": "أبي شقة two bedroom في Dubai Marina",
           "hyp": "أبي شاقة  تبادرون  تبادرون",
-          "wer": 0.857
+          "wer": 0.857,
+          "wer_normalized": 0.857
         },
         {
           "id": "mix-02",
@@ -168,9 +187,16 @@
           "detected": "en",
           "ref": "OK خلاص confirm the booking يوم الخميس",
           "hyp": "Ok, I confirm the booking.  Yo Malchemis.",
-          "wer": 0.429
+          "wer": 0.429,
+          "wer_normalized": 0.5
         }
-      ]
+      ],
+      "wer_normalized_by_dialect": {
+        "en": 0.095,
+        "ar-gulf": 0.818,
+        "ar-msa": 0.829,
+        "mixed": 0.692
+      }
     },
     "base": {
       "wer_by_dialect": {
@@ -187,7 +213,8 @@
           "detected": "en",
           "ref": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina.",
           "hyp": "Hi, I would like to book a viewing for a two bedroom flat and do by Marina.",
-          "wer": 0.188
+          "wer": 0.188,
+          "wer_normalized": 0.188
         },
         {
           "id": "en-02",
@@ -195,7 +222,8 @@
           "detected": "en",
           "ref": "My budget is one hundred and twenty thousand dirhams a year.",
           "hyp": "My budget is 120,000 RM a year.",
-          "wer": 0.545
+          "wer": 0.545,
+          "wer_normalized": 0.143
         },
         {
           "id": "en-03",
@@ -203,7 +231,8 @@
           "detected": "en",
           "ref": "Is there anything on Thursday between four and six in the afternoon?",
           "hyp": "Is there anything on Thursday between 4 and 6 in the afternoon?",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-04",
@@ -211,7 +240,8 @@
           "detected": "en",
           "ref": "My number is zero five zero one two three four five six seven.",
           "hyp": "My number is 0501234567.",
-          "wer": 0.769
+          "wer": 0.769,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-05",
@@ -219,7 +249,8 @@
           "detected": "en",
           "ref": "Yes please, confirm the booking.",
           "hyp": "Yes, please, confirm the booking.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-06",
@@ -227,7 +258,8 @@
           "detected": "en",
           "ref": "Actually, cancel that booking please.",
           "hyp": "Actually, cancel that booking please.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-01",
@@ -235,7 +267,8 @@
           "detected": "ar",
           "ref": "أبي أحجز معاينة لشقة في دبي مارينا",
           "hyp": "أبي أحجز معاياً لشقة في دبي مارين",
-          "wer": 0.286
+          "wer": 0.286,
+          "wer_normalized": 0.286
         },
         {
           "id": "gulf-02",
@@ -243,7 +276,8 @@
           "detected": "ar",
           "ref": "أبغي شقة غرفتين في البرشاء والميزانية مية وعشرين ألف درهم",
           "hyp": "أبري شق تغرفتين في البرشاء والميزانية ميطن عشرين الف درها",
-          "wer": 0.6
+          "wer": 0.6,
+          "wer_normalized": 0.75
         },
         {
           "id": "gulf-03",
@@ -251,7 +285,8 @@
           "detected": "ar",
           "ref": "يوم الخميس الساعة أربعة العصر زين",
           "hyp": "يوم الخميس الساعة 4 العصر زين",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-04",
@@ -259,7 +294,8 @@
           "detected": "ar",
           "ref": "رقمي صفر خمسة صفر واحد اثنين ثلاثة أربعة خمسة ستة سبعة",
           "hyp": "رقمي صفر خمسة صفر واحد نثنين ثلاثة أربعة خمسة ستستة سبعة",
-          "wer": 0.182
+          "wer": 0.182,
+          "wer_normalized": 2.5
         },
         {
           "id": "gulf-05",
@@ -267,7 +303,8 @@
           "detected": "ar",
           "ref": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر",
           "hyp": "لا ما أبي هذا المواعد عطني وقت ثان عقب الظهل",
-          "wer": 0.3
+          "wer": 0.3,
+          "wer_normalized": 0.444
         },
         {
           "id": "gulf-06",
@@ -275,7 +312,8 @@
           "detected": "ar",
           "ref": "خلاص تمام أكد الحجز",
           "hyp": "في لا ستمام أكد الحج",
-          "wer": 1.0
+          "wer": 1.0,
+          "wer_normalized": 1.0
         },
         {
           "id": "msa-01",
@@ -283,7 +321,8 @@
           "detected": "ar",
           "ref": "أريد حجز موعد لمعاينة شقة في أبوظبي",
           "hyp": "وريد حجز موعد لمعائنا تشقط في أبوظبي.",
-          "wer": 0.429
+          "wer": 0.429,
+          "wer_normalized": 0.429
         },
         {
           "id": "msa-02",
@@ -291,7 +330,8 @@
           "detected": "ar",
           "ref": "أبحث عن شقة من ثلاث غرف نوم في جزيرة الريم",
           "hyp": "أبحث عن شقة من ثلاثهر في نوم في جزيرة الريم.",
-          "wer": 0.2
+          "wer": 0.2,
+          "wer_normalized": 0.2
         },
         {
           "id": "msa-03",
@@ -299,7 +339,8 @@
           "detected": "ar",
           "ref": "ميزانيتي مئتا ألف درهم سنويا",
           "hyp": "ميزانية مئة الفدرها من سنوية",
-          "wer": 1.0
+          "wer": 1.0,
+          "wer_normalized": 1.25
         },
         {
           "id": "msa-04",
@@ -307,7 +348,8 @@
           "detected": "ar",
           "ref": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا",
           "hyp": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا؟",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "msa-05",
@@ -315,7 +357,8 @@
           "detected": "ar",
           "ref": "نعم أؤكد الحجز من فضلك",
           "hyp": "نعم أكد الحجم فضلك",
-          "wer": 0.6
+          "wer": 0.6,
+          "wer_normalized": 0.6
         },
         {
           "id": "msa-06",
@@ -323,7 +366,8 @@
           "detected": "ar",
           "ref": "رقم هاتفي صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلاثة",
           "hyp": "أقمها تفي صفر 5.5 تسعة ثمانية 27.5.4 ثلاثة",
-          "wer": 0.667
+          "wer": 0.667,
+          "wer_normalized": 2.333
         },
         {
           "id": "mix-01",
@@ -331,7 +375,8 @@
           "detected": "ar",
           "ref": "أبي شقة two bedroom في Dubai Marina",
           "hyp": "ابي شاكت  تباد رون  تباد مرينة",
-          "wer": 0.857
+          "wer": 0.857,
+          "wer_normalized": 0.857
         },
         {
           "id": "mix-02",
@@ -339,9 +384,16 @@
           "detected": "he",
           "ref": "OK خلاص confirm the booking يوم الخميس",
           "hyp": "אוקיי, חלוס.  קרפירים את זה.  יום על חמיש.",
-          "wer": 1.143
+          "wer": 1.143,
+          "wer_normalized": 1.333
         }
-      ]
+      ],
+      "wer_normalized_by_dialect": {
+        "en": 0.095,
+        "ar-gulf": 0.636,
+        "ar-msa": 0.571,
+        "mixed": 1.077
+      }
     },
     "small": {
       "wer_by_dialect": {
@@ -358,7 +410,8 @@
           "detected": "en",
           "ref": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina.",
           "hyp": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-02",
@@ -366,7 +419,8 @@
           "detected": "en",
           "ref": "My budget is one hundred and twenty thousand dirhams a year.",
           "hyp": "My budget is 120,000 Dharams a year.",
-          "wer": 0.545
+          "wer": 0.545,
+          "wer_normalized": 0.143
         },
         {
           "id": "en-03",
@@ -374,7 +428,8 @@
           "detected": "en",
           "ref": "Is there anything on Thursday between four and six in the afternoon?",
           "hyp": "Is there anything on Thursday between 4 and 6 in the afternoon?",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-04",
@@ -382,7 +437,8 @@
           "detected": "en",
           "ref": "My number is zero five zero one two three four five six seven.",
           "hyp": "My number is 0501234567",
-          "wer": 0.769
+          "wer": 0.769,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-05",
@@ -390,7 +446,8 @@
           "detected": "en",
           "ref": "Yes please, confirm the booking.",
           "hyp": "Yes please, confirm the booking.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-06",
@@ -398,7 +455,8 @@
           "detected": "en",
           "ref": "Actually, cancel that booking please.",
           "hyp": "Actually, cancel that booking please.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-01",
@@ -406,7 +464,8 @@
           "detected": "ar",
           "ref": "أبي أحجز معاينة لشقة في دبي مارينا",
           "hyp": "أبي أحجز معاينة لشقة في دبي مارينة",
-          "wer": 0.143
+          "wer": 0.143,
+          "wer_normalized": 0.143
         },
         {
           "id": "gulf-02",
@@ -414,7 +473,8 @@
           "detected": "ar",
           "ref": "أبغي شقة غرفتين في البرشاء والميزانية مية وعشرين ألف درهم",
           "hyp": "أبضي شقة غرفتين في البرشاء والميزانية مية 20 ألف درهن",
-          "wer": 0.3
+          "wer": 0.3,
+          "wer_normalized": 0.25
         },
         {
           "id": "gulf-03",
@@ -422,7 +482,8 @@
           "detected": "ar",
           "ref": "يوم الخميس الساعة أربعة العصر زين",
           "hyp": "يوم الخميس الساعة أربعة العصر زين",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-04",
@@ -430,7 +491,8 @@
           "detected": "ar",
           "ref": "رقمي صفر خمسة صفر واحد اثنين ثلاثة أربعة خمسة ستة سبعة",
           "hyp": "رقمي صفر خمسة صفر واحد اثنين ثلاثة اربعة خمسة ستة سبعة",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-05",
@@ -438,7 +500,8 @@
           "detected": "ar",
           "ref": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر",
           "hyp": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-06",
@@ -446,7 +509,8 @@
           "detected": "ar",
           "ref": "خلاص تمام أكد الحجز",
           "hyp": "فلاس تمام أكد الحج",
-          "wer": 0.5
+          "wer": 0.5,
+          "wer_normalized": 0.5
         },
         {
           "id": "msa-01",
@@ -454,7 +518,8 @@
           "detected": "ar",
           "ref": "أريد حجز موعد لمعاينة شقة في أبوظبي",
           "hyp": "أريد حجز موعد لمعاينة شقة في أبو غبي",
-          "wer": 0.286
+          "wer": 0.286,
+          "wer_normalized": 0.286
         },
         {
           "id": "msa-02",
@@ -462,7 +527,8 @@
           "detected": "ar",
           "ref": "أبحث عن شقة من ثلاث غرف نوم في جزيرة الريم",
           "hyp": "أبحث عن شقة من ثلاث هرف نوم في جزيرة الريم",
-          "wer": 0.1
+          "wer": 0.1,
+          "wer_normalized": 0.1
         },
         {
           "id": "msa-03",
@@ -470,7 +536,8 @@
           "detected": "ar",
           "ref": "ميزانيتي مئتا ألف درهم سنويا",
           "hyp": "ميزانية مئة الفدرها من سنوية",
-          "wer": 1.0
+          "wer": 1.0,
+          "wer_normalized": 1.25
         },
         {
           "id": "msa-04",
@@ -478,7 +545,8 @@
           "detected": "ar",
           "ref": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا",
           "hyp": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا؟",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "msa-05",
@@ -486,7 +554,8 @@
           "detected": "ar",
           "ref": "نعم أؤكد الحجز من فضلك",
           "hyp": "نعم أكتد الحج من فضلكة",
-          "wer": 0.6
+          "wer": 0.6,
+          "wer_normalized": 0.6
         },
         {
           "id": "msa-06",
@@ -494,7 +563,8 @@
           "detected": "ar",
           "ref": "رقم هاتفي صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلاثة",
           "hyp": "أقمها في صفر 5.9.876.43",
-          "wer": 0.917
+          "wer": 0.917,
+          "wer_normalized": 1.333
         },
         {
           "id": "mix-01",
@@ -502,7 +572,8 @@
           "detected": "ar",
           "ref": "أبي شقة two bedroom في Dubai Marina",
           "hyp": "أبي شقق",
-          "wer": 0.857
+          "wer": 0.857,
+          "wer_normalized": 0.857
         },
         {
           "id": "mix-02",
@@ -510,9 +581,16 @@
           "detected": "ar",
           "ref": "OK خلاص confirm the booking يوم الخميس",
           "hyp": "حسناً، خلص، يوم الخمس",
-          "wer": 0.857
+          "wer": 0.857,
+          "wer_normalized": 1.0
         }
-      ]
+      ],
+      "wer_normalized_by_dialect": {
+        "en": 0.024,
+        "ar-gulf": 0.152,
+        "ar-msa": 0.429,
+        "mixed": 0.923
+      }
     },
     "small:prompt": {
       "wer_by_dialect": {
@@ -529,7 +607,8 @@
           "detected": "en",
           "ref": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina.",
           "hyp": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-02",
@@ -537,7 +616,8 @@
           "detected": "en",
           "ref": "My budget is one hundred and twenty thousand dirhams a year.",
           "hyp": "My budget is 120,000 dirhams a year.",
-          "wer": 0.455
+          "wer": 0.455,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-03",
@@ -545,7 +625,8 @@
           "detected": "en",
           "ref": "Is there anything on Thursday between four and six in the afternoon?",
           "hyp": "Is there anything on Thursday between 4 and 6 in the afternoon?",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-04",
@@ -553,7 +634,8 @@
           "detected": "en",
           "ref": "My number is zero five zero one two three four five six seven.",
           "hyp": "My number is 0501234567.",
-          "wer": 0.769
+          "wer": 0.769,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-05",
@@ -561,7 +643,8 @@
           "detected": "en",
           "ref": "Yes please, confirm the booking.",
           "hyp": "Yes please, confirm the booking.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-06",
@@ -569,7 +652,8 @@
           "detected": "en",
           "ref": "Actually, cancel that booking please.",
           "hyp": "Actually, cancel that booking please.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-01",
@@ -577,7 +661,8 @@
           "detected": "ar",
           "ref": "أبي أحجز معاينة لشقة في دبي مارينا",
           "hyp": "أبي أحجز معاينة لشقة في دبي مارينا.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-02",
@@ -585,7 +670,8 @@
           "detected": "ar",
           "ref": "أبغي شقة غرفتين في البرشاء والميزانية مية وعشرين ألف درهم",
           "hyp": "أبضي شقة غرفتين في البرشاء والميزانية مية 20 ألف درهم",
-          "wer": 0.2
+          "wer": 0.2,
+          "wer_normalized": 0.125
         },
         {
           "id": "gulf-03",
@@ -593,7 +679,8 @@
           "detected": "ar",
           "ref": "يوم الخميس الساعة أربعة العصر زين",
           "hyp": "يوم الخميس الساعة أربعة العصري زين.",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.333
         },
         {
           "id": "gulf-04",
@@ -601,7 +688,8 @@
           "detected": "ar",
           "ref": "رقمي صفر خمسة صفر واحد اثنين ثلاثة أربعة خمسة ستة سبعة",
           "hyp": "غقمي صفر خمسة صفر واحد اثنين ثلاثة اربعة خمسة ستة سبعة.",
-          "wer": 0.091
+          "wer": 0.091,
+          "wer_normalized": 0.5
         },
         {
           "id": "gulf-05",
@@ -609,7 +697,8 @@
           "detected": "ar",
           "ref": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر",
           "hyp": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-06",
@@ -617,7 +706,8 @@
           "detected": "ar",
           "ref": "خلاص تمام أكد الحجز",
           "hyp": "فلاس تمام أكد الحجز.",
-          "wer": 0.25
+          "wer": 0.25,
+          "wer_normalized": 0.25
         },
         {
           "id": "msa-01",
@@ -625,7 +715,8 @@
           "detected": "ar",
           "ref": "أريد حجز موعد لمعاينة شقة في أبوظبي",
           "hyp": "أريد حجز موعد لمعاينة شقة في أبو غبي.",
-          "wer": 0.286
+          "wer": 0.286,
+          "wer_normalized": 0.286
         },
         {
           "id": "msa-02",
@@ -633,7 +724,8 @@
           "detected": "ar",
           "ref": "أبحث عن شقة من ثلاث غرف نوم في جزيرة الريم",
           "hyp": "أبحث عن شقة من ثلاث هرف نوم في جزيرة الريم.",
-          "wer": 0.1
+          "wer": 0.1,
+          "wer_normalized": 0.1
         },
         {
           "id": "msa-03",
@@ -641,7 +733,8 @@
           "detected": "ar",
           "ref": "ميزانيتي مئتا ألف درهم سنويا",
           "hyp": "ميزانية مئة الفدرها من سنوية.",
-          "wer": 1.0
+          "wer": 1.0,
+          "wer_normalized": 1.25
         },
         {
           "id": "msa-04",
@@ -649,7 +742,8 @@
           "detected": "ar",
           "ref": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا",
           "hyp": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا؟",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "msa-05",
@@ -657,7 +751,8 @@
           "detected": "ar",
           "ref": "نعم أؤكد الحجز من فضلك",
           "hyp": "نعم، وأكتد الحجز من فضلكة.",
-          "wer": 0.4
+          "wer": 0.4,
+          "wer_normalized": 0.4
         },
         {
           "id": "msa-06",
@@ -665,7 +760,8 @@
           "detected": "ar",
           "ref": "رقم هاتفي صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلاثة",
           "hyp": "أقمهات في صفر 5.5987643",
-          "wer": 0.917
+          "wer": 0.917,
+          "wer_normalized": 1.333
         },
         {
           "id": "mix-01",
@@ -673,7 +769,8 @@
           "detected": "ar",
           "ref": "أبي شقة two bedroom في Dubai Marina",
           "hyp": "أبي شقة",
-          "wer": 0.714
+          "wer": 0.714,
+          "wer_normalized": 0.714
         },
         {
           "id": "mix-02",
@@ -681,9 +778,16 @@
           "detected": "ar",
           "ref": "OK خلاص confirm the booking يوم الخميس",
           "hyp": "حسناً، خلص، يوم الخمس.",
-          "wer": 0.857
+          "wer": 0.857,
+          "wer_normalized": 1.0
         }
-      ]
+      ],
+      "wer_normalized_by_dialect": {
+        "en": 0.0,
+        "ar-gulf": 0.121,
+        "ar-msa": 0.4,
+        "mixed": 0.846
+      }
     },
     "medium": {
       "wer_by_dialect": {
@@ -700,7 +804,8 @@
           "detected": "en",
           "ref": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina.",
           "hyp": "Hi, I would like to book a viewing for a two-bedroom flat in Dubai Marina.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-02",
@@ -708,7 +813,8 @@
           "detected": "en",
           "ref": "My budget is one hundred and twenty thousand dirhams a year.",
           "hyp": "My budget is 120,000 dirhams a year.",
-          "wer": 0.455
+          "wer": 0.455,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-03",
@@ -716,7 +822,8 @@
           "detected": "en",
           "ref": "Is there anything on Thursday between four and six in the afternoon?",
           "hyp": "Is there anything on Thursday between 4 and 6 in the afternoon?",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-04",
@@ -724,7 +831,8 @@
           "detected": "en",
           "ref": "My number is zero five zero one two three four five six seven.",
           "hyp": "My number is 0501234567",
-          "wer": 0.769
+          "wer": 0.769,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-05",
@@ -732,7 +840,8 @@
           "detected": "en",
           "ref": "Yes please, confirm the booking.",
           "hyp": "Yes, please confirm the booking",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-06",
@@ -740,7 +849,8 @@
           "detected": "en",
           "ref": "Actually, cancel that booking please.",
           "hyp": "Actually, cancel that booking please.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-01",
@@ -748,7 +858,8 @@
           "detected": "ar",
           "ref": "أبي أحجز معاينة لشقة في دبي مارينا",
           "hyp": "أبي أحجز معاينة لشقة في دبي مارينة",
-          "wer": 0.143
+          "wer": 0.143,
+          "wer_normalized": 0.143
         },
         {
           "id": "gulf-02",
@@ -756,7 +867,8 @@
           "detected": "ar",
           "ref": "أبغي شقة غرفتين في البرشاء والميزانية مية وعشرين ألف درهم",
           "hyp": "أبري شقة غرفتين في البرشاء والميزانية مية وعشرين ألف درهم",
-          "wer": 0.1
+          "wer": 0.1,
+          "wer_normalized": 0.125
         },
         {
           "id": "gulf-03",
@@ -764,7 +876,8 @@
           "detected": "ar",
           "ref": "يوم الخميس الساعة أربعة العصر زين",
           "hyp": "يوم الخميس الساعة أربعة العصر زين",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-04",
@@ -772,7 +885,8 @@
           "detected": "ar",
           "ref": "رقمي صفر خمسة صفر واحد اثنين ثلاثة أربعة خمسة ستة سبعة",
           "hyp": "رقمي صفر خمسة صفر واحد اثنين ثلاثة اربعة خمسة ستة سبعة",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-05",
@@ -780,7 +894,8 @@
           "detected": "ar",
           "ref": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر",
           "hyp": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-06",
@@ -788,7 +903,8 @@
           "detected": "ar",
           "ref": "خلاص تمام أكد الحجز",
           "hyp": "فلاص تمام أكد الحج",
-          "wer": 0.5
+          "wer": 0.5,
+          "wer_normalized": 0.5
         },
         {
           "id": "msa-01",
@@ -796,7 +912,8 @@
           "detected": "ar",
           "ref": "أريد حجز موعد لمعاينة شقة في أبوظبي",
           "hyp": "أريد حجز موعد لمعاينة شقة في أبو غبي",
-          "wer": 0.286
+          "wer": 0.286,
+          "wer_normalized": 0.286
         },
         {
           "id": "msa-02",
@@ -804,7 +921,8 @@
           "detected": "ar",
           "ref": "أبحث عن شقة من ثلاث غرف نوم في جزيرة الريم",
           "hyp": "أبحث عن شقة من ثلاث هرف نوم في جزيرة الريم",
-          "wer": 0.1
+          "wer": 0.1,
+          "wer_normalized": 0.1
         },
         {
           "id": "msa-03",
@@ -812,7 +930,8 @@
           "detected": "ar",
           "ref": "ميزانيتي مئتا ألف درهم سنويا",
           "hyp": "ميزانية مئة الف درهم سنويا",
-          "wer": 0.4
+          "wer": 0.4,
+          "wer_normalized": 0.5
         },
         {
           "id": "msa-04",
@@ -820,7 +939,8 @@
           "detected": "ar",
           "ref": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا",
           "hyp": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا؟",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "msa-05",
@@ -828,7 +948,8 @@
           "detected": "ar",
           "ref": "نعم أؤكد الحجز من فضلك",
           "hyp": "نعم أؤكد الحج من فضلك",
-          "wer": 0.2
+          "wer": 0.2,
+          "wer_normalized": 0.2
         },
         {
           "id": "msa-06",
@@ -836,7 +957,8 @@
           "detected": "ar",
           "ref": "رقم هاتفي صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلاثة",
           "hyp": "أقم هاتف صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلافة",
-          "wer": 0.25
+          "wer": 0.25,
+          "wer_normalized": 1.333
         },
         {
           "id": "mix-01",
@@ -844,7 +966,8 @@
           "detected": "ar",
           "ref": "أبي شقة two bedroom في Dubai Marina",
           "hyp": "أبي شقت  دبي مارينة",
-          "wer": 0.857
+          "wer": 0.857,
+          "wer_normalized": 0.857
         },
         {
           "id": "mix-02",
@@ -852,9 +975,16 @@
           "detected": "ar",
           "ref": "OK خلاص confirm the booking يوم الخميس",
           "hyp": "حسنا. خلص.  تقوم بقرية.  يوم الخميس.",
-          "wer": 0.714
+          "wer": 0.714,
+          "wer_normalized": 0.833
         }
-      ]
+      ],
+      "wer_normalized_by_dialect": {
+        "en": 0.0,
+        "ar-gulf": 0.121,
+        "ar-msa": 0.286,
+        "mixed": 0.846
+      }
     },
     "medium:prompt": {
       "wer_by_dialect": {
@@ -871,7 +1001,8 @@
           "detected": "en",
           "ref": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina.",
           "hyp": "Hi, I would like to book a viewing for a two-bedroom flat in Dubai Marina.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-02",
@@ -879,7 +1010,8 @@
           "detected": "en",
           "ref": "My budget is one hundred and twenty thousand dirhams a year.",
           "hyp": "My budget is 120,000 dirhams a year.",
-          "wer": 0.455
+          "wer": 0.455,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-03",
@@ -887,7 +1019,8 @@
           "detected": "en",
           "ref": "Is there anything on Thursday between four and six in the afternoon?",
           "hyp": "Is there anything on Thursday between 4 and 6 in the afternoon?",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-04",
@@ -895,7 +1028,8 @@
           "detected": "en",
           "ref": "My number is zero five zero one two three four five six seven.",
           "hyp": "My number is 0501234567.",
-          "wer": 0.769
+          "wer": 0.769,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-05",
@@ -903,7 +1037,8 @@
           "detected": "en",
           "ref": "Yes please, confirm the booking.",
           "hyp": "Yes, please, confirm the booking.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-06",
@@ -911,7 +1046,8 @@
           "detected": "en",
           "ref": "Actually, cancel that booking please.",
           "hyp": "Actually, cancel that booking please.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-01",
@@ -919,7 +1055,8 @@
           "detected": "ar",
           "ref": "أبي أحجز معاينة لشقة في دبي مارينا",
           "hyp": "أبي أحجز معاينة لشقة في دبي مارينا.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-02",
@@ -927,7 +1064,8 @@
           "detected": "ar",
           "ref": "أبغي شقة غرفتين في البرشاء والميزانية مية وعشرين ألف درهم",
           "hyp": "أبري شقة غرفتين في البرشاء والميزانية مية وعشرين ألف درهم.",
-          "wer": 0.1
+          "wer": 0.1,
+          "wer_normalized": 0.125
         },
         {
           "id": "gulf-03",
@@ -935,7 +1073,8 @@
           "detected": "ar",
           "ref": "يوم الخميس الساعة أربعة العصر زين",
           "hyp": "يوم الخميس الساعة أربعة العصر زين",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-04",
@@ -943,7 +1082,8 @@
           "detected": "ar",
           "ref": "رقمي صفر خمسة صفر واحد اثنين ثلاثة أربعة خمسة ستة سبعة",
           "hyp": "رقمي صفر خمسة صفر واحد وثنين ثلاثة أربعة خمسة ستة سبعة.",
-          "wer": 0.091
+          "wer": 0.091,
+          "wer_normalized": 0.5
         },
         {
           "id": "gulf-05",
@@ -951,7 +1091,8 @@
           "detected": "ar",
           "ref": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر",
           "hyp": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-06",
@@ -959,7 +1100,8 @@
           "detected": "ar",
           "ref": "خلاص تمام أكد الحجز",
           "hyp": "فلاس تمام أكد الحجز.",
-          "wer": 0.25
+          "wer": 0.25,
+          "wer_normalized": 0.25
         },
         {
           "id": "msa-01",
@@ -967,7 +1109,8 @@
           "detected": "ar",
           "ref": "أريد حجز موعد لمعاينة شقة في أبوظبي",
           "hyp": "أريد حجز موعد لمعاينة شقة في أبو غبي.",
-          "wer": 0.286
+          "wer": 0.286,
+          "wer_normalized": 0.286
         },
         {
           "id": "msa-02",
@@ -975,7 +1118,8 @@
           "detected": "ar",
           "ref": "أبحث عن شقة من ثلاث غرف نوم في جزيرة الريم",
           "hyp": "أبحث عن شقة من ثلاث هرف نوم في جزيرة الريم.",
-          "wer": 0.1
+          "wer": 0.1,
+          "wer_normalized": 0.1
         },
         {
           "id": "msa-03",
@@ -983,7 +1127,8 @@
           "detected": "ar",
           "ref": "ميزانيتي مئتا ألف درهم سنويا",
           "hyp": "ميزانية مئة الف درهم سنويا.",
-          "wer": 0.4
+          "wer": 0.4,
+          "wer_normalized": 0.5
         },
         {
           "id": "msa-04",
@@ -991,7 +1136,8 @@
           "detected": "ar",
           "ref": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا",
           "hyp": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا؟",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "msa-05",
@@ -999,7 +1145,8 @@
           "detected": "ar",
           "ref": "نعم أؤكد الحجز من فضلك",
           "hyp": "نعم، أؤكد الحج من فضلك.",
-          "wer": 0.2
+          "wer": 0.2,
+          "wer_normalized": 0.2
         },
         {
           "id": "msa-06",
@@ -1007,7 +1154,8 @@
           "detected": "ar",
           "ref": "رقم هاتفي صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلاثة",
           "hyp": "أقم هاتف صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلاثة.",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.667
         },
         {
           "id": "mix-01",
@@ -1015,7 +1163,8 @@
           "detected": "ar",
           "ref": "أبي شقة two bedroom في Dubai Marina",
           "hyp": "أبي شقة تبدرون في دبي مارينا",
-          "wer": 0.571
+          "wer": 0.571,
+          "wer_normalized": 0.571
         },
         {
           "id": "mix-02",
@@ -1023,9 +1172,16 @@
           "detected": "ar",
           "ref": "OK خلاص confirm the booking يوم الخميس",
           "hyp": "حسنا. خلص.  تقريب الموقع.  يوم الخميس.",
-          "wer": 0.714
+          "wer": 0.714,
+          "wer_normalized": 0.833
         }
-      ]
+      ],
+      "wer_normalized_by_dialect": {
+        "en": 0.0,
+        "ar-gulf": 0.091,
+        "ar-msa": 0.229,
+        "mixed": 0.692
+      }
     },
     "large-v3-turbo:prompt": {
       "wer_by_dialect": {
@@ -1042,7 +1198,8 @@
           "detected": "en",
           "ref": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina.",
           "hyp": "Hi, I would like to book a viewing for a two-bedroom flat in Dubai Marina.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-02",
@@ -1050,7 +1207,8 @@
           "detected": "en",
           "ref": "My budget is one hundred and twenty thousand dirhams a year.",
           "hyp": "MY budget is 120,000 dirhams a year.",
-          "wer": 0.455
+          "wer": 0.455,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-03",
@@ -1058,7 +1216,8 @@
           "detected": "en",
           "ref": "Is there anything on Thursday between four and six in the afternoon?",
           "hyp": "Is there anything on Thursday between 4 and 6 in the afternoon?",
-          "wer": 0.167
+          "wer": 0.167,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-04",
@@ -1066,7 +1225,8 @@
           "detected": "en",
           "ref": "My number is zero five zero one two three four five six seven.",
           "hyp": "My number is 0501234567.",
-          "wer": 0.769
+          "wer": 0.769,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-05",
@@ -1074,7 +1234,8 @@
           "detected": "en",
           "ref": "Yes please, confirm the booking.",
           "hyp": "yes please, confirm the booking.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "en-06",
@@ -1082,7 +1243,8 @@
           "detected": "en",
           "ref": "Actually, cancel that booking please.",
           "hyp": "Actually, cancel that booking please.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-01",
@@ -1090,7 +1252,8 @@
           "detected": "ar",
           "ref": "أبي أحجز معاينة لشقة في دبي مارينا",
           "hyp": "أبي أحجز معاينة لشقة في دبي مارينا.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-02",
@@ -1098,7 +1261,8 @@
           "detected": "ar",
           "ref": "أبغي شقة غرفتين في البرشاء والميزانية مية وعشرين ألف درهم",
           "hyp": "أبغي شقة غرفتين في البرشاء والميزانية 120 ألف درهم.",
-          "wer": 0.2
+          "wer": 0.2,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-03",
@@ -1106,7 +1270,8 @@
           "detected": "ar",
           "ref": "يوم الخميس الساعة أربعة العصر زين",
           "hyp": "يوم الخميس الساعة أربعة العصر زين.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-04",
@@ -1114,7 +1279,8 @@
           "detected": "ar",
           "ref": "رقمي صفر خمسة صفر واحد اثنين ثلاثة أربعة خمسة ستة سبعة",
           "hyp": "رقمي 0501234567",
-          "wer": 0.909
+          "wer": 0.909,
+          "wer_normalized": 0.0
         },
         {
           "id": "gulf-05",
@@ -1122,7 +1288,8 @@
           "detected": "ar",
           "ref": "لا ما أبي هذا الموعد عطني وقت ثاني عقب الظهر",
           "hyp": "لاما أبي هذا الموعد عطني وقت ثاني عقب الظهر.",
-          "wer": 0.2
+          "wer": 0.2,
+          "wer_normalized": 0.222
         },
         {
           "id": "gulf-06",
@@ -1130,7 +1297,8 @@
           "detected": "ar",
           "ref": "خلاص تمام أكد الحجز",
           "hyp": "فلاص تمام أكد الحج.",
-          "wer": 0.5
+          "wer": 0.5,
+          "wer_normalized": 0.5
         },
         {
           "id": "msa-01",
@@ -1138,7 +1306,8 @@
           "detected": "ar",
           "ref": "أريد حجز موعد لمعاينة شقة في أبوظبي",
           "hyp": "أريد حجز موعد لمعاينة شقة في أبو غبي.",
-          "wer": 0.286
+          "wer": 0.286,
+          "wer_normalized": 0.286
         },
         {
           "id": "msa-02",
@@ -1146,7 +1315,8 @@
           "detected": "ar",
           "ref": "أبحث عن شقة من ثلاث غرف نوم في جزيرة الريم",
           "hyp": "أبحث عن شقة من ثلاث غرف نوم في جزيرة الريم.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "msa-03",
@@ -1154,7 +1324,8 @@
           "detected": "ar",
           "ref": "ميزانيتي مئتا ألف درهم سنويا",
           "hyp": "ميزانية مئة ألف درهم سنويا.",
-          "wer": 0.4
+          "wer": 0.4,
+          "wer_normalized": 0.5
         },
         {
           "id": "msa-04",
@@ -1162,7 +1333,8 @@
           "detected": "ar",
           "ref": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحا",
           "hyp": "هل يوجد موعد يوم الأحد في الساعة العاشرة صباحاً؟",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "msa-05",
@@ -1170,7 +1342,8 @@
           "detected": "ar",
           "ref": "نعم أؤكد الحجز من فضلك",
           "hyp": "نعم أؤكد الحج من فضلك.",
-          "wer": 0.2
+          "wer": 0.2,
+          "wer_normalized": 0.2
         },
         {
           "id": "msa-06",
@@ -1178,7 +1351,8 @@
           "detected": "ar",
           "ref": "رقم هاتفي صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلاثة",
           "hyp": "رقم هاتفي صفر خمسة خمسة تسعة ثمانية سبعة ستة خمسة أربعة ثلاثة.",
-          "wer": 0.0
+          "wer": 0.0,
+          "wer_normalized": 0.0
         },
         {
           "id": "mix-01",
@@ -1186,7 +1360,8 @@
           "detected": "en",
           "ref": "أبي شقة two bedroom في Dubai Marina",
           "hyp": "أبي شقة.  Two-bedroom.  Dubai Marina.",
-          "wer": 0.143
+          "wer": 0.143,
+          "wer_normalized": 0.143
         },
         {
           "id": "mix-02",
@@ -1194,9 +1369,16 @@
           "detected": "ar",
           "ref": "OK خلاص confirm the booking يوم الخميس",
           "hyp": "خلص.  يوم الخميس.",
-          "wer": 0.714
+          "wer": 0.714,
+          "wer_normalized": 0.833
         }
-      ]
+      ],
+      "wer_normalized_by_dialect": {
+        "en": 0.0,
+        "ar-gulf": 0.121,
+        "ar-msa": 0.143,
+        "mixed": 0.462
+      }
     }
   }
 }
