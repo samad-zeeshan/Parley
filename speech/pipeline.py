@@ -44,6 +44,7 @@ class VoiceCall:
         return VoiceReply(transcript, asr_lang, turn, speech, timings)
 
     def push(self, frame: np.ndarray, extra_db: float = 0.0) -> list[VoiceReply]:
+        self.rec.lang_hint = self.agent.lang
         out = []
         for ev in self.rec.push(frame, extra_db=extra_db):
             if ev.kind == "final" and ev.text.strip():
@@ -55,5 +56,5 @@ class VoiceCall:
 
     def utterance(self, pcm: np.ndarray) -> VoiceReply:
         """Whole-utterance path (push-to-talk): no VAD, decode the clip as one turn."""
-        t = self.rec.asr.transcribe(pcm)
+        t = self.rec.asr.transcribe(pcm, lang_hint=self.agent.lang)
         return self.respond(t.text, t.lang, t.seconds)

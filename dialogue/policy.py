@@ -110,6 +110,8 @@ def decide(s: DialogueState) -> Action:
 
     if s.intent == "out_of_scope":
         return Action("redirect", {"next": _next_question(s)})
+    if s.intent == "unclear" and s.last_spoken == "ask_slot" and s.last_asked:
+        return Action("ask_slot", {"slot": s.last_asked, "reason": "not_understood"})
 
     if s.hold:
         if s.last_spoken == "ask_confirm" and s.intent == "confirm" and "phone" in s.slots:

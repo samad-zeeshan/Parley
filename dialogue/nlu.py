@@ -133,7 +133,7 @@ class RuleNLU:
         elif _has(words, joined, GREET):
             intent = "greet"
         else:
-            intent = "out_of_scope"
+            intent = "unclear"
         return NLUResult(intent=intent, slots=slots, choice=choice, source=self.name)
 
     @staticmethod

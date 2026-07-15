@@ -75,6 +75,8 @@ def template(action: Action, lang: str) -> str:
         q = ASK[lang][a["slot"]]
         if a.get("reason") == "none_suitable":
             return ("No problem. " if en else "ولا يهمك. ") + q
+        if a.get("reason") == "not_understood":
+            return ("Sorry, I did not catch that. " if en else "عذرا، ما سمعتك زين. ") + q
         return q
     if action.name == "offer":
         lines = [f"{'Option' if en else 'الخيار'} {i}: {_slot_line(s, lang)}." for i, s in enumerate(a["slots"], 1)]

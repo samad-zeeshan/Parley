@@ -163,3 +163,13 @@ def test_out_of_scope_gets_a_redirect_not_a_guess():
     s = state(slots={"area": "Dubai Marina"})
     s.merge(nlu("out_of_scope"))
     assert decide(s).name == "redirect"
+
+
+def test_unclear_answer_to_a_question_asks_it_again():
+    s = state(slots={"area": "Dubai Marina", "bedrooms": 2, "date": "2026-10-01"})
+    s.record_search([SLOT_A])
+    s.record_hold({"hold_id": "h-0123456789ab", "slot_id": SLOT_A["slot_id"]}, SLOT_A)
+    s.record_spoken(decide(s))          # "what is your mobile number?"
+    s.merge(nlu("unclear"))
+    a = decide(s)
+    assert a.name == "ask_slot" and a.args == {"slot": "phone", "reason": "not_understood"}

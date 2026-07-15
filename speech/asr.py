@@ -25,6 +25,9 @@ DOMAIN_PROMPT = ("Viewing booking in Dubai Marina, Al Barsha, JLT, Downtown, Al 
                  "حجز معاينة شقة في دبي مارينا والبرشاء وجزيرة الريم، غرفتين، درهم، الساعة.")
 
 
+SHORT_CLIP_S = 1.5
+
+
 @dataclass
 class Transcript:
     text: str
@@ -44,11 +47,15 @@ class WhisperASR:
         threads = int(os.environ.get("MAJLIS_ASR_THREADS", "0")) or max(1, (os.cpu_count() or 4) - 2)
         self.model = WhisperModel(self.size, device="cpu", compute_type=compute_type, cpu_threads=threads)
 
-    def transcribe(self, pcm: np.ndarray, partial: bool = False) -> Transcript:
+    def transcribe(self, pcm: np.ndarray, partial: bool = False, lang_hint: str | None = None) -> Transcript:
         t0 = time.perf_counter()
         audio = pcm.astype(np.float32) / 32768.0
+        # Language detection on a clip under ~1.5 s is unreliable: "نعم" came back as "Love." in the
+        # evaluation. For short clips the language of the conversation so far is used instead.
+        language = lang_hint if lang_hint and len(pcm) < SHORT_CLIP_S * SAMPLE_RATE else None
         segs, info = self.model.transcribe(audio, beam_size=1, vad_filter=False, initial_prompt=self.prompt,
-                                           without_timestamps=True, condition_on_previous_text=False)
+                                           without_timestamps=True, condition_on_previous_text=False,
+                                           language=language)
         text = " ".join(s.text.strip() for s in segs).strip()
         return Transcript(text, info.language, info.language_probability, time.perf_counter() - t0)
 
@@ -62,7 +69,7 @@ class FakeASR:
         self.lang = lang
         self.seen_seconds: list[float] = []
 
-    def transcribe(self, pcm: np.ndarray, partial: bool = False) -> Transcript:
+    def transcribe(self, pcm: np.ndarray, partial: bool = False, lang_hint: str | None = None) -> Transcript:
         if partial:
             words = (self.texts[0] if self.texts else "").split()
             n = max(1, int(len(pcm) / SAMPLE_RATE / 0.4))
@@ -84,6 +91,7 @@ class ASREvent:
 class StreamingRecognizer:
     def __init__(self, asr, vad: EnergyVAD | None = None, preroll: float = 0.3, partial_every: float | None = None):
         self.asr = asr
+        self.lang_hint: str | None = None
         self.vad = vad or EnergyVAD()
         self.preroll = deque(maxlen=int(preroll * SAMPLE_RATE / FRAME))
         self.partial_every = partial_every
@@ -113,7 +121,7 @@ class StreamingRecognizer:
             self.buffer.append(frame)
             pcm = np.concatenate(self.buffer)
             t0 = time.perf_counter()
-            t = self.asr.transcribe(pcm)
+            t = self.asr.transcribe(pcm, lang_hint=self.lang_hint)
             events.append(ASREvent("final", t.text, t.lang, len(pcm) / SAMPLE_RATE,
                                    t.seconds or time.perf_counter() - t0, pcm))
             self.buffer = []
@@ -127,5 +135,5 @@ class StreamingRecognizer:
         pcm = np.concatenate(self.buffer)
         self.buffer = []
         self.vad.reset()
-        t = self.asr.transcribe(pcm)
+        t = self.asr.transcribe(pcm, lang_hint=self.lang_hint)
         return [ASREvent("final", t.text, t.lang, len(pcm) / SAMPLE_RATE, t.seconds, pcm)]

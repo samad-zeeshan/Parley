@@ -16,7 +16,8 @@ INTENTS = [
     "repeat",
     "greet",
     "goodbye",
-    "out_of_scope",
+    "out_of_scope",     # clearly about something else (weather, news)
+    "unclear",          # nothing usable heard: the agent asks again
 ]
 
 AREA_NAMES = [a for _, a, _, _ in AREAS]

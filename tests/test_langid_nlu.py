@@ -62,6 +62,8 @@ nlu = RuleNLU()
     ("أبي شقة two bedroom في Dubai Marina يوم Thursday", "book_viewing",
      {"area": "Dubai Marina", "bedrooms": 2, "date": "2026-10-01"}),
     ("what's the weather tomorrow", "out_of_scope", {"date": "2026-10-02"}),
+    ("mmm", "unclear", {}),
+    ("صفر خمسة ستة واحد", "unclear", {}),                 # a phone number with digits missing
 ])
 def test_rule_nlu(text, intent, slots):
     out = nlu.parse(text, TODAY)
