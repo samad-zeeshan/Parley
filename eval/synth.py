@@ -14,14 +14,15 @@ _sapi: dict[str, SapiTTS] = {}
 
 
 def render(segments: list[tuple[str, str]], voice: str = "piper", gap: float = 0.12,
-           length_scale: float | None = None) -> np.ndarray:
+           length_scale: float | None = None, sapi_rate: int = 0) -> np.ndarray:
     global _piper
     parts = [silence(0.25)]
     for lang, text in segments:
         if voice.startswith("sapi") and lang == "en":
             name = "Microsoft David Desktop" if voice == "sapi-david" else "Microsoft Zira Desktop"
-            _sapi.setdefault(name, SapiTTS(name))
-            parts.append(_sapi[name].synthesize(text, "en").pcm)
+            key = f"{name}/{sapi_rate}"
+            _sapi.setdefault(key, SapiTTS(name, rate=sapi_rate))
+            parts.append(_sapi[key].synthesize(text, "en").pcm)
         else:
             _piper = _piper or PiperTTS()
             parts.append(_piper.synthesize(text, lang, length_scale=length_scale).pcm)

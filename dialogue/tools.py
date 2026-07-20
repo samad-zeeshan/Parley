@@ -22,6 +22,8 @@ from api.service import BookingError, BookingService
 from .schema import TOOL_SCHEMAS
 
 _VALIDATORS = {name: Draft202012Validator(schema) for name, schema in TOOL_SCHEMAS.items()}
+_METRIC_ACTION = {"list_slots": "list", "hold_slot": "hold", "release_hold": "release",
+                  "confirm_booking": "confirm", "cancel_booking": "cancel"}
 
 
 class ToolRejected(Exception):
@@ -70,27 +72,37 @@ class ToolExecutor:
         self.validate(tool, args)
         self._log("tool_call", {"tool": tool, "args": args})
         try:
-            if tool == "list_slots":
-                window = (args.pop("start", "00:00"), args.pop("end", "24:00"))
-                has_window = window != ("00:00", "24:00")
-                out = self.svc.list_slots(window=window if has_window else None, limit=args.pop("limit", 5), **args)
-                self.offered_ids.update(s["slot_id"] for s in out)
-                return out
-            if tool == "hold_slot":
-                out = self.svc.hold(args["slot_id"], caller_id=self.session_id)
-                self.hold_ids.add(out["hold_id"])
-                return out
-            if tool == "release_hold":
-                return self.svc.release(args["hold_id"])
-            if tool == "confirm_booking":
-                # One key per session and hold: a retried confirm replays instead of double-booking.
-                key = f"{self.session_id}:{args['hold_id']}"
-                out = self.svc.confirm(args["hold_id"], args["phone"], idempotency_key=key)
-                self.booking_ids.add(out["booking_id"])
-                return out
-            if tool == "cancel_booking":
-                return self.svc.cancel(args["booking_id"])
+            out = self._run(tool, args)
         except BookingError as e:
             self._log("tool_failed", {"tool": tool, "error": e.code})
+            self._count(tool, e.code)
             raise
+        self._count(tool, "replay" if isinstance(out, dict) and out.get("replayed") else "ok")
+        return out
+
+    def _count(self, tool: str, outcome: str) -> None:
+        if self.metrics:
+            self.metrics.booking_actions.labels(_METRIC_ACTION[tool], outcome).inc()
+
+    def _run(self, tool: str, args: dict):
+        if tool == "list_slots":
+            window = (args.pop("start", "00:00"), args.pop("end", "24:00"))
+            has_window = window != ("00:00", "24:00")
+            out = self.svc.list_slots(window=window if has_window else None, limit=args.pop("limit", 5), **args)
+            self.offered_ids.update(s["slot_id"] for s in out)
+            return out
+        if tool == "hold_slot":
+            out = self.svc.hold(args["slot_id"], caller_id=self.session_id)
+            self.hold_ids.add(out["hold_id"])
+            return out
+        if tool == "release_hold":
+            return self.svc.release(args["hold_id"])
+        if tool == "confirm_booking":
+            # One key per session and hold: a retried confirm replays instead of double-booking.
+            key = f"{self.session_id}:{args['hold_id']}"
+            out = self.svc.confirm(args["hold_id"], args["phone"], idempotency_key=key)
+            self.booking_ids.add(out["booking_id"])
+            return out
+        if tool == "cancel_booking":
+            return self.svc.cancel(args["booking_id"])
         raise ToolRejected(tool, "unreachable")

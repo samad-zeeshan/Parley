@@ -80,3 +80,17 @@ def test_rejections_and_calls_are_in_the_audit_chain(tools, conn):
     assert "hold" in actions
     assert all(e["payload"].get("session_id") == "sess-1" for e in entries(conn) if e["action"].startswith("tool"))
     assert verify_chain(conn)
+
+
+def test_agent_booking_actions_reach_the_metrics(svc, conn):
+    from api.metrics import Metrics
+
+    m = Metrics()
+    tools = ToolExecutor(svc, conn, session_id="m", metrics=m)
+    offered = tools.call("list_slots", {"area": "Al Barsha"})
+    hold = tools.call("hold_slot", {"slot_id": offered[0]["slot_id"]})
+    tools.call("confirm_booking", {"hold_id": hold["hold_id"], "phone": "0501234567"})
+    tools.call("confirm_booking", {"hold_id": hold["hold_id"], "phone": "0501234567"})
+    get = m.registry.get_sample_value
+    assert get("majlis_booking_actions_total", {"action": "confirm", "outcome": "ok"}) == 1
+    assert get("majlis_booking_actions_total", {"action": "confirm", "outcome": "replay"}) == 1
