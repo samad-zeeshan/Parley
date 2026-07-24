@@ -1,0 +1,23 @@
+# Majlis on one namespace: the service (booking API, agent sessions, demo page), Prometheus and Grafana.
+# Same shape as Tally: plain manifests, a dashboard kept as a JSON file, one `kubectl apply -k`.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: majlis
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: majlis
+
+resources:
+  - namespace.yaml
+  - config.yaml
+  - majlis.yaml
+  - monitoring/prometheus.yaml
+  - monitoring/grafana.yaml
+
+# A content hash in the generated name rolls Grafana when the dashboard JSON changes.
+configMapGenerator:
+  - name: grafana-dashboards
+    files:
+      - majlis.json=monitoring/majlis-dashboard.json

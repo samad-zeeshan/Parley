@@ -1,0 +1,87 @@
+# One replica on purpose: the booking store is SQLite on an emptyDir, so a second replica would be a
+# second, disagreeing database, and a restart starts from the synthetic seed again. That is fine for a
+# demo and for CI; a real deployment would move bookings to Postgres first.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: majlis
+  labels:
+    app.kubernetes.io/name: majlis
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: majlis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: majlis
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: majlis
+          image: majlis:dev
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: majlis-config
+          ports:
+            - name: http
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: majlis
+  labels:
+    app.kubernetes.io/name: majlis
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: majlis
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      nodePort: 30080

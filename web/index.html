@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Majlis voice booking</title>
+<style>
+  :root {
+    --bg: #f7f5f0; --panel: #ffffff; --ink: #1d1b16; --muted: #6b6558; --line: #e4dfd3;
+    --accent: #0f6e5c; --accent-ink: #ffffff; --caller: #eef4f2; --agent: #f4f1ea; --warn: #9a3b1a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151412; --panel: #1f1d1a; --ink: #eeeae1; --muted: #a39d90; --line: #34312b;
+      --accent: #3fb59b; --accent-ink: #0d1411; --caller: #1c2926; --agent: #2a2721; --warn: #f08a62;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.5 system-ui, "Segoe UI", "Noto Sans Arabic", Tahoma, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 0.95rem; }
+  #log { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+         min-height: 320px; max-height: 60vh; overflow-y: auto; }
+  .msg { border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
+  .caller { background: var(--caller); margin-left: 15%; }
+  .agent { background: var(--agent); margin-right: 15%; }
+  .who { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .text { font-size: 1.05rem; }
+  .latin { color: var(--muted); font-size: 0.9rem; font-style: italic; }
+  .meta { color: var(--muted); font-size: 0.75rem; margin-top: 4px; }
+  .controls { display: flex; gap: 12px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  #ptt { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px;
+         padding: 16px 28px; font-size: 1rem; font-weight: 600; cursor: pointer; user-select: none;
+         touch-action: none; }
+  #ptt.rec { background: var(--warn); }
+  #ptt:disabled { opacity: 0.5; cursor: wait; }
+  form { display: flex; gap: 8px; flex: 1; min-width: 240px; }
+  input[type=text] { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line);
+                     background: var(--panel); color: var(--ink); font: inherit; }
+  button.send { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line);
+                background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+  #status { color: var(--muted); font-size: 0.9rem; min-height: 1.4em; margin-top: 8px; }
+  .note { color: var(--muted); font-size: 0.85rem; margin-top: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Majlis: book a property viewing</h1>
+  <p class="sub">Speak English, Gulf Arabic or MSA, or mix them. Hold the button while you talk. All listings,
+    agents and phone numbers are synthetic.</p>
+  <div id="log" aria-live="polite"></div>
+  <div class="controls">
+    <button id="ptt" type="button">Hold to talk</button>
+    <form id="textform">
+      <input id="text" type="text" placeholder="or type: أبي أحجز معاينة في دبي مارينا" autocomplete="off">
+      <button class="send" type="submit">Send</button>
+    </form>
+  </div>
+  <div id="status"></div>
+  <p class="note">Pressing the button while the agent is speaking stops it at once (barge-in). Each line shows
+    the Arabic script and a Latin reading underneath.</p>
+</main>
+<script>
+const log = document.getElementById("log");
+const statusEl = document.getElementById("status");
+const ptt = document.getElementById("ptt");
+let session = null, recorder = null, chunks = [], stream = null, playing = null;
+
+const hasArabic = s => /[؀-ۿ]/.test(s || "");
+
+async function newSession() {
+  const r = await fetch("/agent/sessions", { method: "POST" });
+  session = (await r.json()).session_id;
+}
+
+function add(who, text, latin, meta) {
+  const div = document.createElement("div");
+  div.className = "msg " + who;
+  const whoEl = document.createElement("div");
+  whoEl.className = "who";
+  whoEl.textContent = who === "caller" ? "Caller" : "Agent";
+  const t = document.createElement("div");
+  t.className = "text";
+  t.textContent = text || "(nothing heard)";
+  t.dir = hasArabic(text) ? "rtl" : "ltr";
+  div.append(whoEl, t);
+  if (hasArabic(text) && latin) {
+    const l = document.createElement("div");
+    l.className = "latin";
+    l.textContent = latin;
+    div.append(l);
+  }
+  if (meta) {
+    const m = document.createElement("div");
+    m.className = "meta";
+    m.textContent = meta;
+    div.append(m);
+  }
+  log.append(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function stopAgent() {
+  if (playing) { playing.pause(); playing = null; }
+}
+
+function show(body) {
+  const t = body.timings || {};
+  add("caller", body.transcript, body.transcript_latin,
+      `${body.dialect} · intent ${body.intent}` + (t.asr ? ` · ASR ${t.asr.toFixed(2)} s` : ""));
+  add("agent", body.reply, body.reply_latin,
+      `${body.action} · reply in ${body.lang}` + (t.total ? ` · turn ${t.total.toFixed(2)} s` : ""));
+  if (body.reply_audio_wav_b64) {
+    playing = new Audio("data:audio/wav;base64," + body.reply_audio_wav_b64);
+    playing.onended = () => { playing = null; };
+    playing.play().catch(() => {});
+  }
+}
+
+async function sendAudio(blob) {
+  ptt.disabled = true;
+  statusEl.textContent = "Transcribing on this machine's CPU, this takes a few seconds...";
+  try {
+    const r = await fetch(`/agent/sessions/${session}/audio`, { method: "POST", body: blob,
+      headers: { "Content-Type": blob.type || "audio/webm" } });
+    if (!r.ok) { statusEl.textContent = `Audio turn failed: ${r.status} ${await r.text()}`; return; }
+    show(await r.json());
+    statusEl.textContent = "";
+  } finally { ptt.disabled = false; }
+}
+
+async function startTalking(e) {
+  e.preventDefault();
+  stopAgent();                                   // barge-in: the caller wins
+  if (!session) await newSession();
+  if (!stream) {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 } });
+  }
+  chunks = [];
+  recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = ev => chunks.push(ev.data);
+  recorder.onstop = () => sendAudio(new Blob(chunks, { type: recorder.mimeType }));
+  recorder.start();
+  ptt.classList.add("rec");
+  ptt.textContent = "Listening... release to send";
+}
+
+function stopTalking(e) {
+  e.preventDefault();
+  if (recorder && recorder.state === "recording") recorder.stop();
+  ptt.classList.remove("rec");
+  ptt.textContent = "Hold to talk";
+}
+
+ptt.addEventListener("pointerdown", startTalking);
+ptt.addEventListener("pointerup", stopTalking);
+ptt.addEventListener("pointerleave", e => { if (recorder && recorder.state === "recording") stopTalking(e); });
+
+document.getElementById("textform").addEventListener("submit", async e => {
+  e.preventDefault();
+  const input = document.getElementById("text");
+  const text = input.value.trim();
+  if (!text) return;
+  stopAgent();
+  if (!session) await newSession();
+  input.value = "";
+  const r = await fetch(`/agent/sessions/${session}/text?speak=true`, { method: "POST",
+    headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+  show(await r.json());
+});
+</script>
+</body>
+</html>

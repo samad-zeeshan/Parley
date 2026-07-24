@@ -1,0 +1,17 @@
+# The service's whole configuration. CI gate 4 reads this object back from the cluster and checks the
+# running pod reports the same values on /config, so a hand edit in the cluster fails the gate.
+#
+# The cluster image is built without the speech extras (faster-whisper, Piper models are large and the
+# CI runner has no use for them), so audio turns are off here and the agent is reached by text.
+# The local model is not reachable from inside kind either, so NLU runs on the rule parser.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: majlis-config
+data:
+  MAJLIS_NLU: rules
+  MAJLIS_LLM_MODEL: qwen/qwen3.5-9b
+  MAJLIS_LLM_URL: http://host.docker.internal:1234/v1
+  MAJLIS_ASR_MODEL: none
+  MAJLIS_TTS: none
+  MAJLIS_DB: /data/majlis.db
