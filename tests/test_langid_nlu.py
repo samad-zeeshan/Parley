@@ -120,3 +120,15 @@ def test_unreachable_model_falls_back():
 
     n = LLMNLU(base_url="http://127.0.0.1:9", timeout=0.5)
     assert n.parse("yes please confirm", TODAY).source == "rules-fallback"
+
+
+def test_slots_the_model_left_out_come_from_the_rule_parser():
+    n = FakeLLMNLU('{"intent": "book_viewing", "slots": {"bedrooms": 2}}')
+    out = n.parse("I am looking for a two bedroom in JVC", TODAY)
+    assert out.source == "llm" and out.intent == "book_viewing"
+    assert out.slots == {"area": "Jumeirah Village Circle", "bedrooms": 2}
+
+
+def test_model_choice_falls_back_to_the_rule_reading():
+    n = FakeLLMNLU('{"intent": "choose_option", "slots": {}}')
+    assert n.parse("the second one", TODAY).choice == 2

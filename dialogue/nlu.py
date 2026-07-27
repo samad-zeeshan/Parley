@@ -231,10 +231,17 @@ class LLMNLU:
             out = self.fallback.parse(text, today, norm)
             out.source = "rules-fallback"
             return out
-        slots, dropped = evidenced_slots(data.get("slots", {}), norm, self.fallback.parse(text, today, norm))
+        rules = self.fallback.parse(text, today, norm)
+        kept, dropped = evidenced_slots(data.get("slots", {}), norm, rules)
         self.dropped_slots += len(dropped)
-        return NLUResult(intent=data["intent"], slots=slots, choice=data.get("choice"), source=self.name,
-                         dropped=dropped)
+        # The model often leaves out a slot the utterance plainly states (in the evaluation it dropped
+        # "JVC" and "Dubai Marina"). Slots are therefore the rule parser's reading plus the model's
+        # evidenced values on top; the intent and the option choice are the model's own.
+        slots = {**rules.slots, **kept}
+        choice = data.get("choice")
+        if choice is None and data["intent"] == "choose_option":
+            choice = rules.choice
+        return NLUResult(intent=data["intent"], slots=slots, choice=choice, source=self.name, dropped=dropped)
 
 
 def evidenced_slots(slots: dict, norm: Normalized, rules: NLUResult) -> tuple[dict, dict]:
