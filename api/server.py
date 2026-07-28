@@ -3,12 +3,12 @@
 Run: uv run uvicorn api.server:app --port 8000
 
 Configuration comes from the environment (a ConfigMap in Kubernetes):
-  MAJLIS_DB          sqlite path (default majlis.db)
-  MAJLIS_NLU         rules | llm (default rules)
-  MAJLIS_LLM_MODEL   model id served by LM Studio (default qwen/qwen3.5-9b)
-  MAJLIS_LLM_URL     OpenAI-compatible base URL (default http://127.0.0.1:1234/v1)
-  MAJLIS_ASR_MODEL   faster-whisper size (default small); "none" disables audio turns
-  MAJLIS_TTS         piper | none (default piper)
+  PARLEY_DB          sqlite path (default parley.db)
+  PARLEY_NLU         rules | llm (default rules)
+  PARLEY_LLM_MODEL   model id served by LM Studio (default qwen/qwen3.5-9b)
+  PARLEY_LLM_URL     OpenAI-compatible base URL (default http://127.0.0.1:1234/v1)
+  PARLEY_ASR_MODEL   faster-whisper size (default small); "none" disables audio turns
+  PARLEY_TTS         piper | none (default piper)
 """
 
 from __future__ import annotations
@@ -45,11 +45,11 @@ class TextIn(BaseModel):
 
 def effective_config() -> dict:
     cfg = {
-        "nlu": os.environ.get("MAJLIS_NLU", "rules"),
-        "llm_model": os.environ.get("MAJLIS_LLM_MODEL", "qwen/qwen3.5-9b"),
-        "llm_url": os.environ.get("MAJLIS_LLM_URL", "http://127.0.0.1:1234/v1"),
-        "asr_model": os.environ.get("MAJLIS_ASR_MODEL", "small"),
-        "tts": os.environ.get("MAJLIS_TTS", "piper"),
+        "nlu": os.environ.get("PARLEY_NLU", "rules"),
+        "llm_model": os.environ.get("PARLEY_LLM_MODEL", "qwen/qwen3.5-9b"),
+        "llm_url": os.environ.get("PARLEY_LLM_URL", "http://127.0.0.1:1234/v1"),
+        "asr_model": os.environ.get("PARLEY_ASR_MODEL", "small"),
+        "tts": os.environ.get("PARLEY_TTS", "piper"),
         "hold_ttl_s": int(HOLD_TTL.total_seconds()),
     }
     cfg["config_hash"] = hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()[:16]
@@ -76,15 +76,15 @@ class _Lazy:
 
 
 def _default_asr():
-    if os.environ.get("MAJLIS_ASR_MODEL", "small") == "none":
-        raise RuntimeError("audio turns disabled (MAJLIS_ASR_MODEL=none)")
+    if os.environ.get("PARLEY_ASR_MODEL", "small") == "none":
+        raise RuntimeError("audio turns disabled (PARLEY_ASR_MODEL=none)")
     from speech.asr import WhisperASR
 
     return WhisperASR()
 
 
 def _default_tts():
-    if os.environ.get("MAJLIS_TTS", "piper") == "none":
+    if os.environ.get("PARLEY_TTS", "piper") == "none":
         raise RuntimeError("tts disabled")
     from speech.tts import PiperTTS
 
@@ -166,7 +166,7 @@ def create_server(conn=None, clock=None, asr=None, tts=None):
     def index():
         page = WEB / "index.html"
         if not page.exists():
-            return HTMLResponse("<p>Majlis API. The demo page is not in this build.</p>")
+            return HTMLResponse("<p>Parley API. The demo page is not in this build.</p>")
         return FileResponse(page)
 
     return app

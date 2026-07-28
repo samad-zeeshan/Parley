@@ -6,8 +6,8 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    MAJLIS_ASR_MODEL=none \
-    MAJLIS_TTS=none
+    PARLEY_ASR_MODEL=none \
+    PARLEY_TTS=none
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ COPY speech ./speech
 COPY dialogue ./dialogue
 COPY web ./web
 
-RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin majlis
+RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin parley
 USER 10001
 
 EXPOSE 8000

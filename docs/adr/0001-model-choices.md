@@ -78,9 +78,9 @@ English errors were almost all number formatting. For Arabic the normalized WER 
 raw WER: normalization turns "مية وعشرين ألف" (three words) into one token, so one wrong number is one
 error over fewer reference words. The ranking of models does not change.
 
-Decision: faster-whisper small, int8, with the domain prompt, is the default (`MAJLIS_ASR_MODEL=small`).
+Decision: faster-whisper small, int8, with the domain prompt, is the default (`PARLEY_ASR_MODEL=small`).
 It is the fastest model with usable Gulf WER. medium is 2.3 times slower for a gain that is mostly on
-MSA; it is one environment variable away (`MAJLIS_ASR_MODEL=medium`) for anyone with a faster CPU. No
+MSA; it is one environment variable away (`PARLEY_ASR_MODEL=medium`) for anyone with a faster CPU. No
 model here meets a 1.5 second turn budget on this CPU, so we pick for accuracy per second rather than
 pretend otherwise.
 

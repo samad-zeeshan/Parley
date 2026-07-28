@@ -37,14 +37,14 @@ class Transcript:
 
 
 class WhisperASR:
-    """faster-whisper on CPU. Model size from MAJLIS_ASR_MODEL (default small)."""
+    """faster-whisper on CPU. Model size from PARLEY_ASR_MODEL (default small)."""
 
     def __init__(self, size: str | None = None, prompt: str | None = DOMAIN_PROMPT, compute_type: str = "int8"):
         from faster_whisper import WhisperModel
 
-        self.size = size or os.environ.get("MAJLIS_ASR_MODEL", "small")
+        self.size = size or os.environ.get("PARLEY_ASR_MODEL", "small")
         self.prompt = prompt
-        threads = int(os.environ.get("MAJLIS_ASR_THREADS", "0")) or max(1, (os.cpu_count() or 4) - 2)
+        threads = int(os.environ.get("PARLEY_ASR_THREADS", "0")) or max(1, (os.cpu_count() or 4) - 2)
         self.model = WhisperModel(self.size, device="cpu", compute_type=compute_type, cpu_threads=threads)
 
     def transcribe(self, pcm: np.ndarray, partial: bool = False, lang_hint: str | None = None) -> Transcript:

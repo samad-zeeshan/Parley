@@ -168,8 +168,8 @@ class LLMPhraser:
     """Rewords the template with a local model. Never trusted: Phraser checks the result."""
 
     def __init__(self, model: str | None = None, base_url: str | None = None, timeout: float = 30.0):
-        self.model = model or os.environ.get("MAJLIS_LLM_MODEL", "qwen/qwen3.5-9b")
-        self.base_url = (base_url or os.environ.get("MAJLIS_LLM_URL", "http://127.0.0.1:1234/v1")).rstrip("/")
+        self.model = model or os.environ.get("PARLEY_LLM_MODEL", "qwen/qwen3.5-9b")
+        self.base_url = (base_url or os.environ.get("PARLEY_LLM_URL", "http://127.0.0.1:1234/v1")).rstrip("/")
         self.timeout = timeout
 
     def phrase(self, action: Action, payload: str, lang: str) -> str:

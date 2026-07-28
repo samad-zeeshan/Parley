@@ -1,5 +1,5 @@
 [project]
-name = "majlis"
+name = "parley"
 version = "0.1.0"
 description = "Bilingual Arabic and English voice agent that books property viewings against a local booking API."
 readme = "README.md"

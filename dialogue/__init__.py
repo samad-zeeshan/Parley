@@ -1,1 +1,1 @@
-"""Majlis dialogue package."""
+"""Parley dialogue package."""

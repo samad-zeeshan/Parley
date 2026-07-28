@@ -18,9 +18,9 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-NS = "majlis"
-KEYS = {"MAJLIS_NLU": "nlu", "MAJLIS_LLM_MODEL": "llm_model", "MAJLIS_LLM_URL": "llm_url",
-        "MAJLIS_ASR_MODEL": "asr_model", "MAJLIS_TTS": "tts"}
+NS = "parley"
+KEYS = {"PARLEY_NLU": "nlu", "PARLEY_LLM_MODEL": "llm_model", "PARLEY_LLM_URL": "llm_url",
+        "PARLEY_ASR_MODEL": "asr_model", "PARLEY_TTS": "tts"}
 
 
 def kubectl(*args: str) -> subprocess.CompletedProcess:
@@ -42,8 +42,8 @@ def main(base: str) -> int:
     if diff.returncode != 0:
         failures.append("kubectl diff found drift:\n" + (diff.stdout or diff.stderr))
 
-    manifest = (ROOT / "k8s" / "majlis.yaml").read_text(encoding="utf-8")
-    dep = json.loads(kubectl("-n", NS, "get", "deploy", "majlis", "-o", "json").stdout)
+    manifest = (ROOT / "k8s" / "parley.yaml").read_text(encoding="utf-8")
+    dep = json.loads(kubectl("-n", NS, "get", "deploy", "parley", "-o", "json").stdout)
     image = dep["spec"]["template"]["spec"]["containers"][0]["image"]
     if image != manifest_value(manifest, "image"):
         failures.append(f"image {image} != manifest {manifest_value(manifest, 'image')}")
@@ -52,7 +52,7 @@ def main(base: str) -> int:
     if dep["status"].get("readyReplicas") != dep["spec"]["replicas"]:
         failures.append(f"ready replicas {dep['status'].get('readyReplicas')} != {dep['spec']['replicas']}")
 
-    cm = json.loads(kubectl("-n", NS, "get", "configmap", "majlis-config", "-o", "json").stdout)["data"]
+    cm = json.loads(kubectl("-n", NS, "get", "configmap", "parley-config", "-o", "json").stdout)["data"]
     with urllib.request.urlopen(base + "/config", timeout=10) as r:
         live = json.loads(r.read())
     for env_key, cfg_key in KEYS.items():

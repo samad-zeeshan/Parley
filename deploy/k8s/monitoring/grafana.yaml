@@ -1,4 +1,4 @@
-# Grafana with the Prometheus datasource and the Majlis dashboard provisioned from files, so a fresh
+# Grafana with the Prometheus datasource and the Parley dashboard provisioned from files, so a fresh
 # cluster shows the dashboard with no clicks. Anonymous viewer only, login form off.
 apiVersion: v1
 kind: ConfigMap
@@ -17,7 +17,7 @@ data:
   dashboards.yaml: |
     apiVersion: 1
     providers:
-      - name: majlis
+      - name: parley
         folder: ""
         type: file
         options:
@@ -52,7 +52,7 @@ spec:
             - name: GF_AUTH_BASIC_ENABLED
               value: "false"
             - name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH
-              value: /var/lib/grafana/dashboards/majlis.json
+              value: /var/lib/grafana/dashboards/parley.json
             - name: GF_ANALYTICS_REPORTING_ENABLED
               value: "false"
           ports:

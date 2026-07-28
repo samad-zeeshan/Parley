@@ -33,7 +33,7 @@ class ConfirmIn(BaseModel):
 
 
 def open_default_db() -> sqlite3.Connection:
-    path = os.environ.get("MAJLIS_DB", "majlis.db")
+    path = os.environ.get("PARLEY_DB", "parley.db")
     conn = connect(path)
     if conn.execute("select count(*) from properties").fetchone()[0] == 0:
         from datetime import datetime
@@ -50,7 +50,7 @@ def create_app(conn: sqlite3.Connection | None = None, clock=None) -> FastAPI:
     svc = BookingService(conn, clock)
     metrics = Metrics()
 
-    app = FastAPI(title="Majlis booking API", version="0.1.0")
+    app = FastAPI(title="Parley booking API", version="0.1.0")
     app.state.service = svc
     app.state.metrics = metrics
     app.state.clock = clock

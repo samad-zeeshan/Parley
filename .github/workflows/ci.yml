@@ -31,18 +31,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: helm/kind-action@v1
         with:
-          cluster_name: majlis
+          cluster_name: parley
           config: deploy/kind/cluster.yaml
       - name: Gate 1, image builds
-        run: docker build -t majlis:dev .
+        run: docker build -t parley:dev .
       - name: Gate 2, pods ready
         run: |
-          kind load docker-image majlis:dev --name majlis
+          kind load docker-image parley:dev --name parley
           kubectl apply -k deploy/k8s
-          kubectl -n majlis rollout status deploy/majlis --timeout=180s
-          kubectl -n majlis rollout status deploy/prometheus --timeout=180s
-          kubectl -n majlis rollout status deploy/grafana --timeout=180s
-          kubectl -n majlis wait --for=condition=Ready pod --all --timeout=180s
+          kubectl -n parley rollout status deploy/parley --timeout=180s
+          kubectl -n parley rollout status deploy/prometheus --timeout=180s
+          kubectl -n parley rollout status deploy/grafana --timeout=180s
+          kubectl -n parley wait --for=condition=Ready pod --all --timeout=180s
       - name: Gate 3, one scripted booking completes
         run: python3 deploy/ci_booking.py http://127.0.0.1:8000
       - name: Gate 4, deployed config matches the manifest
@@ -50,7 +50,7 @@ jobs:
       - name: Metrics are scraped
         run: |
           for i in $(seq 1 30); do
-            if curl -fsS 'http://127.0.0.1:9090/api/v1/query?query=majlis_booking_actions_total' | grep -q '"action":"confirm"'; then
+            if curl -fsS 'http://127.0.0.1:9090/api/v1/query?query=parley_booking_actions_total' | grep -q '"action":"confirm"'; then
               echo "prometheus has the booking"; exit 0
             fi
             sleep 2
@@ -59,6 +59,6 @@ jobs:
       - name: Cluster state on failure
         if: failure()
         run: |
-          kubectl -n majlis get all
-          kubectl -n majlis describe pods
-          kubectl -n majlis logs deploy/majlis --tail=200
+          kubectl -n parley get all
+          kubectl -n parley describe pods
+          kubectl -n parley logs deploy/parley --tail=200

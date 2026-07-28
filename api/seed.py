@@ -3,7 +3,7 @@
 Area names are real districts so that a caller can say them; everything inside an
 area (tower letters, unit numbers, agents, rents) is generated from a fixed seed.
 
-Run: uv run python -m api.seed majlis.db [YYYY-MM-DD]
+Run: uv run python -m api.seed parley.db [YYYY-MM-DD]
 """
 
 from __future__ import annotations
@@ -97,6 +97,6 @@ def area_names() -> dict[str, str]:
 
 
 if __name__ == "__main__":
-    path = sys.argv[1] if len(sys.argv) > 1 else "majlis.db"
+    path = sys.argv[1] if len(sys.argv) > 1 else "parley.db"
     anchor = date.fromisoformat(sys.argv[2]) if len(sys.argv) > 2 else datetime.now(DUBAI).date()
     print(seed(connect(path), anchor))

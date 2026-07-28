@@ -1,1 +1,1 @@
-"""Majlis speech package."""
+"""Parley speech package."""

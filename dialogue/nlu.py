@@ -189,8 +189,8 @@ class LLMNLU:
 
     def __init__(self, model: str | None = None, base_url: str | None = None, timeout: float = 30.0,
                  fallback: RuleNLU | None = None):
-        self.model = model or os.environ.get("MAJLIS_LLM_MODEL", "qwen/qwen3.5-9b")
-        self.base_url = (base_url or os.environ.get("MAJLIS_LLM_URL", "http://127.0.0.1:1234/v1")).rstrip("/")
+        self.model = model or os.environ.get("PARLEY_LLM_MODEL", "qwen/qwen3.5-9b")
+        self.base_url = (base_url or os.environ.get("PARLEY_LLM_URL", "http://127.0.0.1:1234/v1")).rstrip("/")
         self.timeout = timeout
         self.fallback = fallback or RuleNLU()
         self.rejections = 0

@@ -1,6 +1,6 @@
 {
-  "title": "Majlis",
-  "uid": "majlis",
+  "title": "Parley",
+  "uid": "parley",
   "schemaVersion": 39,
   "version": 1,
   "time": {"from": "now-30m", "to": "now"},
@@ -12,7 +12,7 @@
       "title": "Booking actions per second, by action and outcome",
       "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "targets": [{"refId": "A", "expr": "sum by (action, outcome) (rate(majlis_booking_actions_total[1m]))",
+      "targets": [{"refId": "A", "expr": "sum by (action, outcome) (rate(parley_booking_actions_total[1m]))",
                    "legendFormat": "{{action}} {{outcome}}"}]
     },
     {
@@ -21,7 +21,7 @@
       "title": "Dialogue turns per second, by detected language and dialect",
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "targets": [{"refId": "A", "expr": "sum by (dialect) (rate(majlis_agent_turns_total[5m]))",
+      "targets": [{"refId": "A", "expr": "sum by (dialect) (rate(parley_agent_turns_total[5m]))",
                    "legendFormat": "{{dialect}}"}]
     },
     {
@@ -32,10 +32,10 @@
       "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
       "targets": [{"refId": "A",
-                   "expr": "histogram_quantile(0.95, sum by (le, stage) (rate(majlis_stage_seconds_bucket[5m])))",
+                   "expr": "histogram_quantile(0.95, sum by (le, stage) (rate(parley_stage_seconds_bucket[5m])))",
                    "legendFormat": "p95 {{stage}}"},
                   {"refId": "B",
-                   "expr": "histogram_quantile(0.5, sum by (le, stage) (rate(majlis_stage_seconds_bucket[5m])))",
+                   "expr": "histogram_quantile(0.5, sum by (le, stage) (rate(parley_stage_seconds_bucket[5m])))",
                    "legendFormat": "p50 {{stage}}"}]
     },
     {
@@ -44,12 +44,12 @@
       "title": "Rejections in the last hour",
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "targets": [{"refId": "A", "expr": "sum(increase(majlis_grounding_rejections_total[1h]))",
+      "targets": [{"refId": "A", "expr": "sum(increase(parley_grounding_rejections_total[1h]))",
                    "legendFormat": "model replies rejected by grounding"},
-                  {"refId": "B", "expr": "sum(increase(majlis_tool_rejections_total[1h]))",
+                  {"refId": "B", "expr": "sum(increase(parley_tool_rejections_total[1h]))",
                    "legendFormat": "tool calls rejected by schema"},
                   {"refId": "C",
-                   "expr": "sum(increase(majlis_booking_actions_total{outcome!~\"ok|replay\"}[1h]))",
+                   "expr": "sum(increase(parley_booking_actions_total{outcome!~\"ok|replay\"}[1h]))",
                    "legendFormat": "booking API errors"}]
     }
   ]

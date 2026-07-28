@@ -9,10 +9,10 @@ data:
     global:
       scrape_interval: 5s
     scrape_configs:
-      - job_name: majlis
+      - job_name: parley
         metrics_path: /metrics
         static_configs:
-          - targets: ["majlis:8000"]
+          - targets: ["parley:8000"]
 ---
 apiVersion: apps/v1
 kind: Deployment

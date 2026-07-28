@@ -163,13 +163,20 @@ def run_call(call_id: str, call: dict, asr: ASRCache, config: str, tts: PiperTTS
         played.append(line)
         gold = call["turns"][line]
         a = asr.get(call_id, line, attempt, agent.lang if len(played) > 1 else None)
+        context = agent.state.last_asked or ""
         reply = vc.respond(a["text"], asr_seconds=a["decode_s"])
         t = reply.turn
+        # The same NLU on the reference text separates ASR errors from NLU errors.
+        today = ANCHOR.date()
+        ref_nlu = nlu.parse(gold["text"], today) if config == "rules" else nlu.parse(gold["text"], today,
+                                                                                     context=context)
         turns_out.append({
             "line": line, "attempt": attempt, "dialect": gold["dialect"], "ref": gold["text"], "hyp": a["text"],
             "asr_segments": a["segments"], "gold_intent": gold["intent"], "intent": t.nlu.intent,
             "gold_slots": {**gold["slots"], **({"choice": gold["choice"]} if gold["choice"] else {})},
             "slots": {**t.nlu.slots, **({"choice": t.nlu.choice} if t.nlu.choice else {})},
+            "intent_on_ref": ref_nlu.intent,
+            "slots_on_ref": {**ref_nlu.slots, **({"choice": ref_nlu.choice} if ref_nlu.choice else {})},
             "dialect_pred": t.dialect, "dialect_pred_ref": identify(gold["text"]).label,
             "action": t.action, "reply": t.text, "reply_lang": t.lang, "reply_source": t.source,
             "rejected": [v.kind for v in t.rejected], "ungrounded": [v.kind for v in t.ungrounded],
@@ -270,14 +277,19 @@ def aggregate_asr(asr: ASRCache) -> dict:
 
 
 def aggregate_config(calls_out: list[dict]) -> dict:
-    per = {d: {"n": 0, "intent_ok": 0, "tp": 0, "fp": 0, "fn": 0, "lat": [], "asr": [], "dlg": [], "tts": []}
-           for d in DIALECTS}
+    per = {d: {"n": 0, "intent_ok": 0, "tp": 0, "fp": 0, "fn": 0, "lat": [], "asr": [], "dlg": [], "tts": [],
+               "intent_ok_ref": 0, "tp_ref": 0, "fp_ref": 0, "fn_ref": 0} for d in DIALECTS}
     rejected = llm_replies = dropped = fallbacks = ungrounded_spoken = 0
     for c in calls_out:
         for t in c["turns"]:
             p = per[t["dialect"]]
             p["n"] += 1
             p["intent_ok"] += t["intent"] == t["gold_intent"]
+            p["intent_ok_ref"] += t["intent_on_ref"] == t["gold_intent"]
+            tpr, fpr, fnr = slot_counts(t["gold_slots"], t["slots_on_ref"])
+            p["tp_ref"] += tpr
+            p["fp_ref"] += fpr
+            p["fn_ref"] += fnr
             tp, fp, fn = slot_counts(t["gold_slots"], t["slots"])
             p["tp"] += tp
             p["fp"] += fp
@@ -298,6 +310,8 @@ def aggregate_config(calls_out: list[dict]) -> dict:
             "turns": n,
             "intent_accuracy": _r(p["intent_ok"] / n) if n else None,
             "slot_f1": _r(f1(p["tp"], p["fp"], p["fn"])),
+            "intent_accuracy_on_reference_text": _r(p["intent_ok_ref"] / n) if n else None,
+            "slot_f1_on_reference_text": _r(f1(p["tp_ref"], p["fp_ref"], p["fn_ref"])),
             "latency_p50_s": _r(percentile(p["lat"], 50), 2) if n else None,
             "latency_p95_s": _r(percentile(p["lat"], 95), 2) if n else None,
             "asr_p50_s": _r(percentile(p["asr"], 50), 2) if n else None,
@@ -348,9 +362,9 @@ def machine() -> dict:
 
 def main() -> dict:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--asr", default=os.environ.get("MAJLIS_ASR_MODEL", "small"))
+    ap.add_argument("--asr", default=os.environ.get("PARLEY_ASR_MODEL", "small"))
     ap.add_argument("--configs", default="rules,llm,llm+phrasing")
-    ap.add_argument("--llm", default=os.environ.get("MAJLIS_LLM_MODEL", "qwen/qwen3.5-9b"))
+    ap.add_argument("--llm", default=os.environ.get("PARLEY_LLM_MODEL", "qwen/qwen3.5-9b"))
     args = ap.parse_args()
     configs = args.configs.split(",")
 
@@ -362,6 +376,15 @@ def main() -> dict:
     tts = PiperTTS()
     tts.synthesize("warm up", "en")
     tts.synthesize("تجربة", "ar")
+
+    if any(c.startswith("llm") for c in configs):
+        # Load the model before timing anything: the first request includes loading it into memory.
+        from speech.normalize import normalize as _norm
+
+        try:
+            LLMNLU(model=args.llm, timeout=300).raw(_norm("hello", ANCHOR.date()), ANCHOR.date())
+        except Exception as e:  # noqa: BLE001
+            print(f"  model warm-up failed: {e}", flush=True)
 
     results_calls, per_config = {}, {}
     for config in configs:

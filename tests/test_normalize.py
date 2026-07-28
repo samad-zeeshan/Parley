@@ -178,3 +178,7 @@ def test_text_without_numbers_is_unchanged_apart_from_orthography():
 
 def test_one_as_pronoun_is_not_a_number():
     assert ents("the first one is fine", "number") == []
+
+
+def test_phone_is_written_digit_by_digit_in_the_canonical_text():
+    assert normalize("call 0501234567 please", TODAY).text == "call 0 5 0 1 2 3 4 5 6 7 please"

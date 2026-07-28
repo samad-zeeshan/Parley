@@ -4,20 +4,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: majlis
+  name: parley
   labels:
-    app.kubernetes.io/name: majlis
+    app.kubernetes.io/name: parley
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: majlis
+      app.kubernetes.io/name: parley
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: majlis
+        app.kubernetes.io/name: parley
     spec:
       securityContext:
         runAsNonRoot: true
@@ -27,12 +27,12 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: majlis
-          image: majlis:dev
+        - name: parley
+          image: parley:dev
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:
-                name: majlis-config
+                name: parley-config
           ports:
             - name: http
               containerPort: 8000
@@ -73,13 +73,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: majlis
+  name: parley
   labels:
-    app.kubernetes.io/name: majlis
+    app.kubernetes.io/name: parley
 spec:
   type: NodePort
   selector:
-    app.kubernetes.io/name: majlis
+    app.kubernetes.io/name: parley
   ports:
     - name: http
       port: 8000

@@ -22,7 +22,7 @@ import numpy as np
 
 from .audio import SAMPLE_RATE, read_wav, resample
 
-MODELS_DIR = Path(os.environ.get("MAJLIS_MODELS_DIR", Path(__file__).resolve().parent.parent / "models"))
+MODELS_DIR = Path(os.environ.get("PARLEY_MODELS_DIR", Path(__file__).resolve().parent.parent / "models"))
 
 PIPER_VOICES = {
     "en": "en_US-lessac-medium",

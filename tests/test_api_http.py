@@ -88,4 +88,4 @@ def test_cancel_and_audit_verify(client):
 def test_metrics_exposes_booking_counters(client):
     _hold(client)
     text = client.get("/metrics").text
-    assert "majlis_booking_actions_total" in text
+    assert "parley_booking_actions_total" in text

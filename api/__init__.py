@@ -1,1 +1,1 @@
-"""Majlis api package."""
+"""Parley api package."""

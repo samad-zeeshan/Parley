@@ -1,18 +1,18 @@
-# Majlis on one namespace: the service (booking API, agent sessions, demo page), Prometheus and Grafana.
+# Parley on one namespace: the service (booking API, agent sessions, demo page), Prometheus and Grafana.
 # Same shape as Tally: plain manifests, a dashboard kept as a JSON file, one `kubectl apply -k`.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: majlis
+namespace: parley
 
 labels:
   - pairs:
-      app.kubernetes.io/part-of: majlis
+      app.kubernetes.io/part-of: parley
 
 resources:
   - namespace.yaml
   - config.yaml
-  - majlis.yaml
+  - parley.yaml
   - monitoring/prometheus.yaml
   - monitoring/grafana.yaml
 
@@ -20,4 +20,4 @@ resources:
 configMapGenerator:
   - name: grafana-dashboards
     files:
-      - majlis.json=monitoring/majlis-dashboard.json
+      - parley.json=monitoring/parley-dashboard.json

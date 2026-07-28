@@ -41,12 +41,14 @@ def tables(r: dict) -> str:
 
     for cfg, c in r["configs"].items():
         out.append(f"Dialogue, config `{cfg}` ({r['setup']['nlu_configs'][cfg]}):\n")
-        out.append("| language / dialect | turns | intent accuracy | slot F1 | turn latency p50 (s) "
-                   "| turn latency p95 (s) | ASR p50 (s) | dialogue p50 (s) | TTS p50 (s) |")
-        out.append("|---|---|---|---|---|---|---|---|---|")
+        out.append("| language / dialect | turns | intent accuracy | slot F1 | intent accuracy, reference text "
+                   "| slot F1, reference text | turn latency p50 (s) | turn latency p95 (s) | ASR p50 (s) "
+                   "| dialogue p50 (s) | TTS p50 (s) |")
+        out.append("|---|---|---|---|---|---|---|---|---|---|---|")
         for d, name in NAMES.items():
             b = c["by_dialect"][d]
             out.append(f"| {name} | {b['turns']} | {_f(b['intent_accuracy'])} | {_f(b['slot_f1'])} | "
+                       f"{_f(b['intent_accuracy_on_reference_text'])} | {_f(b['slot_f1_on_reference_text'])} | "
                        f"{_f(b['latency_p50_s'], 2)} | {_f(b['latency_p95_s'], 2)} | {_f(b['asr_p50_s'], 2)} | "
                        f"{_f(b['dialogue_p50_s'], 3)} | {_f(b['tts_p50_s'], 2)} |")
         tc = c["task_completion_by_call_language"]

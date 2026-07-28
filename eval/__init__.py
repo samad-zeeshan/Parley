@@ -1,1 +1,1 @@
-"""Majlis eval package."""
+"""Parley eval package."""

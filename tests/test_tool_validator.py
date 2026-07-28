@@ -92,5 +92,5 @@ def test_agent_booking_actions_reach_the_metrics(svc, conn):
     tools.call("confirm_booking", {"hold_id": hold["hold_id"], "phone": "0501234567"})
     tools.call("confirm_booking", {"hold_id": hold["hold_id"], "phone": "0501234567"})
     get = m.registry.get_sample_value
-    assert get("majlis_booking_actions_total", {"action": "confirm", "outcome": "ok"}) == 1
-    assert get("majlis_booking_actions_total", {"action": "confirm", "outcome": "replay"}) == 1
+    assert get("parley_booking_actions_total", {"action": "confirm", "outcome": "ok"}) == 1
+    assert get("parley_booking_actions_total", {"action": "confirm", "outcome": "replay"}) == 1

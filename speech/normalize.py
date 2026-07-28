@@ -179,6 +179,9 @@ class Entity:
     def canonical(self) -> str:
         if self.kind == "time_window":
             return f"{self.value[0]}-{self.value[1]}"
+        if self.kind == "phone":
+            # Digit by digit, so a phone number weighs in WER what it weighs when spoken.
+            return " ".join(self.value)
         return str(self.value)
 
 
