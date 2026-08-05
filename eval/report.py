@@ -43,14 +43,15 @@ def tables(r: dict) -> str:
         out.append(f"Dialogue, config `{cfg}` ({r['setup']['nlu_configs'][cfg]}):\n")
         out.append("| language / dialect | turns | intent accuracy | slot F1 | intent accuracy, reference text "
                    "| slot F1, reference text | turn latency p50 (s) | turn latency p95 (s) | ASR p50 (s) "
-                   "| dialogue p50 (s) | TTS p50 (s) |")
-        out.append("|---|---|---|---|---|---|---|---|---|---|---|")
+                   "| dialogue p50 (s) | TTS p50 (s) | Jev ECE | Jev accepted share |")
+        out.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
         for d, name in NAMES.items():
             b = c["by_dialect"][d]
             out.append(f"| {name} | {b['turns']} | {_f(b['intent_accuracy'])} | {_f(b['slot_f1'])} | "
                        f"{_f(b['intent_accuracy_on_reference_text'])} | {_f(b['slot_f1_on_reference_text'])} | "
                        f"{_f(b['latency_p50_s'], 2)} | {_f(b['latency_p95_s'], 2)} | {_f(b['asr_p50_s'], 2)} | "
-                       f"{_f(b['dialogue_p50_s'], 3)} | {_f(b['tts_p50_s'], 2)} |")
+                       f"{_f(b['dialogue_p50_s'], 3)} | {_f(b['tts_p50_s'], 2)} | {_f(b.get('jev_ece'))} | "
+                       f"{_f(b.get('jev_accepted_share'))} |")
         tc = c["task_completion_by_call_language"]
         comp = ", ".join(f"{CALL_NAMES[k]} {v['completed']}/{v['calls']}" for k, v in tc.items())
         lat = c["latency_all_turns"]
@@ -61,8 +62,27 @@ def tables(r: dict) -> str:
                    f"Model slots dropped for lack of evidence: {c['model_slots_dropped_without_evidence']}. "
                    f"NLU fallbacks to rules: {c['nlu_fallbacks_to_rules']}. "
                    f"Model replies spoken: {c['llm_replies_spoken']}; rejected by the grounding check: "
-                   f"{c['llm_replies_rejected_by_grounding']}.\n")
+                   f"{c['llm_replies_rejected_by_grounding']}."
+                   + (f" Jev ECE over all turns: {_f(c.get('jev_ece_all_turns'))}." if c.get('jev_ece_all_turns')
+                      is not None else "")
+                   + (f" Judge: {c['judge']['replies_judged']} replies judged, {c['judge']['decided_by_jev']} "
+                      f"decided by Jev, {c['judge']['escalated_to_check']} escalated to the check, "
+                      f"{c['judge']['jev_grounded_overruled_by_check']} Jev 'grounded' verdicts overruled by the "
+                      f"check, {c['judge']['rejected']} rejected." if c.get("judge") else "")
+                   + "\n")
 
+    jd = r.get("jev_dialect_head_by_dialect")
+    if jd:
+        out.append(f"Jev dialect head ({r['setup']['jev']['model']}, one forward pass per line):\n")
+        out.append("| language / dialect | lines | accuracy, reference text | ECE, reference text "
+                   "| accuracy, ASR text | ECE, ASR text |")
+        out.append("|---|---|---|---|---|---|")
+        for d, name in NAMES.items():
+            b = jd[d]
+            out.append(f"| {name} | {b['lines']} | {_f(b['accuracy_on_reference_text'])} | "
+                       f"{_f(b['ece_on_reference_text'])} | {_f(b['accuracy_on_asr_transcript'])} | "
+                       f"{_f(b['ece_on_asr_transcript'])} |")
+        out.append("")
     out.append(f"Barge-in (caller line played over the agent's real Piper reply, agent echo in the mic at "
                f"{r['setup']['barge_in_echo_gain']} gain, success means stopped within "
                f"{r['setup']['barge_in_bound_s']} s of the caller's first voiced frame):\n")

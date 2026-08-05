@@ -97,6 +97,9 @@ class NLUResult:
     choice: int | None = None
     source: str = "rules"
     dropped: dict = field(default_factory=dict)  # model slots with no support in the utterance
+    confidence: float | None = None              # Jev heads: probability of the chosen option
+    head: str | None = None                      # Jev heads: which head decided
+    probabilities: dict | None = None
 
     def to_json(self) -> dict:
         out = {"intent": self.intent, "slots": dict(self.slots)}

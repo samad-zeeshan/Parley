@@ -29,6 +29,7 @@ from api.db import connect
 from api.seed import seed
 from api.service import BookingService
 from dialogue.agent import Agent
+from dialogue.jev import DIALECT_TO_LABEL, HFLogitModel, JevDecider, JevNLU, JevPhraser, expected_calibration_error
 from dialogue.nlu import LLMNLU, RuleNLU
 from dialogue.phrasing import LLMPhraser, Phraser
 from speech.asr import StreamingRecognizer, WhisperASR
@@ -152,8 +153,16 @@ def run_call(call_id: str, call: dict, asr: ASRCache, config: str, tts: PiperTTS
     clock = FixedClock(ANCHOR)
     seed(conn, anchor=ANCHOR.date(), rng_seed=7)
     svc = BookingService(conn, clock)
-    nlu = RuleNLU() if config == "rules" else LLMNLU(model=llm_model, timeout=60)
-    phraser = Phraser(llm=LLMPhraser(model=llm_model, timeout=60) if config == "llm+phrasing" else None, clock=clock)
+    if config == "rules":
+        nlu = RuleNLU()
+    elif config.startswith("jev"):
+        nlu = JevNLU(jev_decider())
+    else:
+        nlu = LLMNLU(model=llm_model, timeout=60)
+    llm_phrasing = config in ("llm+phrasing", "jev+llm")
+    phraser = Phraser(llm=LLMPhraser(model=llm_model, timeout=60) if llm_phrasing else None, clock=clock)
+    if config == "jev+llm":
+        phraser = JevPhraser(phraser, jev_decider())
     agent = Agent(svc, conn, clock, session_id=f"{config}:{call_id}", nlu=nlu, phraser=phraser)
     vc = VoiceCall(agent, None, tts)
 
@@ -170,6 +179,11 @@ def run_call(call_id: str, call: dict, asr: ASRCache, config: str, tts: PiperTTS
         today = ANCHOR.date()
         ref_nlu = nlu.parse(gold["text"], today) if config == "rules" else nlu.parse(gold["text"], today,
                                                                                      context=context)
+        jev_choice = jev_conf = None
+        if t.nlu.probabilities:
+            best = max(t.nlu.probabilities, key=t.nlu.probabilities.get)
+            jev_choice = {"yes": "confirm", "no": "deny"}.get(best, best) if t.nlu.head == "yes_no" else best
+            jev_conf = t.nlu.probabilities[best]
         turns_out.append({
             "line": line, "attempt": attempt, "dialect": gold["dialect"], "ref": gold["text"], "hyp": a["text"],
             "asr_segments": a["segments"], "gold_intent": gold["intent"], "intent": t.nlu.intent,
@@ -181,6 +195,8 @@ def run_call(call_id: str, call: dict, asr: ASRCache, config: str, tts: PiperTTS
             "action": t.action, "reply": t.text, "reply_lang": t.lang, "reply_source": t.source,
             "rejected": [v.kind for v in t.rejected], "ungrounded": [v.kind for v in t.ungrounded],
             "nlu_source": t.nlu.source, "dropped_slots": list(t.nlu.dropped),
+            "jev_head": t.nlu.head, "jev_choice": jev_choice,
+            "jev_confidence": None if jev_conf is None else round(jev_conf, 4),
             "timings": {k: round(v, 4) for k, v in reply.timings.items()},
             "reply_seconds": round(reply.speech.seconds, 2) if reply.speech is not None else None,
         })
@@ -188,10 +204,13 @@ def run_call(call_id: str, call: dict, asr: ASRCache, config: str, tts: PiperTTS
             turns_out[-1]["_speech"] = reply.speech.pcm
         line = next_line(call, _Action(t.action, _args_for(agent)), line)
 
+    verdicts = [{"grounded": v.grounded, "source": v.source, "p": round(v.probability, 4),
+                 "overruled": v.overruled} for v in getattr(phraser, "verdicts", [])]
     booking = conn.execute("select status, phone from bookings").fetchall()
     completed = booking == [("confirmed", call["phone"])] and verify_chain(conn)
     return {"call_id": call_id, "config": config, "completed": completed, "bookings": booking,
-            "audit_ok": verify_chain(conn), "audit_entries": len(entries(conn)), "turns": turns_out}
+            "audit_ok": verify_chain(conn), "audit_entries": len(entries(conn)), "turns": turns_out,
+            "judge_verdicts": verdicts}
 
 
 class _Action:
@@ -278,7 +297,8 @@ def aggregate_asr(asr: ASRCache) -> dict:
 
 def aggregate_config(calls_out: list[dict]) -> dict:
     per = {d: {"n": 0, "intent_ok": 0, "tp": 0, "fp": 0, "fn": 0, "lat": [], "asr": [], "dlg": [], "tts": [],
-               "intent_ok_ref": 0, "tp_ref": 0, "fp_ref": 0, "fn_ref": 0} for d in DIALECTS}
+               "intent_ok_ref": 0, "tp_ref": 0, "fp_ref": 0, "fn_ref": 0, "jev": [], "accepted": 0}
+           for d in DIALECTS}
     rejected = llm_replies = dropped = fallbacks = ungrounded_spoken = 0
     for c in calls_out:
         for t in c["turns"]:
@@ -303,6 +323,9 @@ def aggregate_config(calls_out: list[dict]) -> dict:
             dropped += len(t["dropped_slots"])
             fallbacks += t["nlu_source"] == "rules-fallback"
             ungrounded_spoken += bool(t["ungrounded"])
+            if t.get("jev_confidence") is not None:
+                p["jev"].append((t["jev_confidence"], t["jev_choice"] == t["gold_intent"]))
+                p["accepted"] += t["nlu_source"] == "jev"
     by = {}
     for d, p in per.items():
         n = p["n"]
@@ -317,6 +340,9 @@ def aggregate_config(calls_out: list[dict]) -> dict:
             "asr_p50_s": _r(percentile(p["asr"], 50), 2) if n else None,
             "dialogue_p50_s": _r(percentile(p["dlg"], 50), 3) if n else None,
             "tts_p50_s": _r(percentile(p["tts"], 50), 2) if n else None,
+            "jev_ece": _r(expected_calibration_error(p["jev"])) if p["jev"] else None,
+            "jev_accuracy_before_cascade": _r(sum(ok for _, ok in p["jev"]) / len(p["jev"])) if p["jev"] else None,
+            "jev_accepted_share": _r(p["accepted"] / len(p["jev"])) if p["jev"] else None,
         }
     all_lat = [x for p in per.values() for x in p["lat"]]
     tasks = {}
@@ -333,7 +359,48 @@ def aggregate_config(calls_out: list[dict]) -> dict:
         "llm_replies_spoken": llm_replies, "llm_replies_rejected_by_grounding": rejected,
         "model_slots_dropped_without_evidence": dropped, "nlu_fallbacks_to_rules": fallbacks,
         "spoken_replies_with_ungrounded_facts": ungrounded_spoken,
+        "jev_ece_all_turns": _r(expected_calibration_error([x for p in per.values() for x in p["jev"]]))
+        if any(p["jev"] for p in per.values()) else None,
+        "judge": _judge_summary([v for c in calls_out for v in c.get("judge_verdicts", [])]),
     }
+
+
+def _judge_summary(vs: list[dict]) -> dict | None:
+    if not vs:
+        return None
+    return {"replies_judged": len(vs), "decided_by_jev": sum(v["source"] == "jev" for v in vs),
+            "escalated_to_check": sum(v["source"] == "check" for v in vs),
+            "jev_grounded_overruled_by_check": sum(v["overruled"] for v in vs),
+            "rejected": sum(not v["grounded"] for v in vs)}
+
+
+_JEV = {}
+
+
+def jev_decider() -> JevDecider:
+    if "d" not in _JEV:
+        _JEV["d"] = JevDecider(HFLogitModel())
+    return _JEV["d"]
+
+
+def jev_dialect_eval(asr: ASRCache) -> dict:
+    """The Jev dialect head on every scripted line, on the reference text and on the ASR text."""
+    d = jev_decider()
+    per = {x: {"ref": [], "hyp": []} for x in DIALECTS}
+    for call_id, call in CALLS.items():
+        for line, t in enumerate(call["turns"]):
+            hyp = asr.get(call_id, line, 0, script_hint(call, line))["text"]
+            for key, text in (("ref", t["text"]), ("hyp", hyp)):
+                choice, p, _ = d.decide("dialect", text=text)
+                per[t["dialect"]][key].append((p, DIALECT_TO_LABEL[choice] == t["dialect"]))
+    out = {}
+    for x, v in per.items():
+        out[x] = {"lines": len(v["ref"]),
+                  "accuracy_on_reference_text": _r(sum(ok for _, ok in v["ref"]) / len(v["ref"])),
+                  "ece_on_reference_text": _r(expected_calibration_error(v["ref"])),
+                  "accuracy_on_asr_transcript": _r(sum(ok for _, ok in v["hyp"]) / len(v["hyp"])),
+                  "ece_on_asr_transcript": _r(expected_calibration_error(v["hyp"]))}
+    return out
 
 
 def aggregate_barge_in(trials: list[dict]) -> dict:
@@ -363,7 +430,7 @@ def machine() -> dict:
 def main() -> dict:
     ap = argparse.ArgumentParser()
     ap.add_argument("--asr", default=os.environ.get("PARLEY_ASR_MODEL", "small"))
-    ap.add_argument("--configs", default="rules,llm,llm+phrasing")
+    ap.add_argument("--configs", default="rules,llm,llm+phrasing,jev,jev+llm")
     ap.add_argument("--llm", default=os.environ.get("PARLEY_LLM_MODEL", "qwen/qwen3.5-9b"))
     args = ap.parse_args()
     configs = args.configs.split(",")
@@ -386,6 +453,12 @@ def main() -> dict:
         except Exception as e:  # noqa: BLE001
             print(f"  model warm-up failed: {e}", flush=True)
 
+    jev_dialect = None
+    if any(c.startswith("jev") for c in configs):
+        print("  loading Jev model", flush=True)
+        jev_decider().decide("yes_no", text="yes", question="ok?")  # load and warm up before timing
+        jev_dialect = jev_dialect_eval(asr)
+
     results_calls, per_config = {}, {}
     for config in configs:
         print(f"stage 2: scripted calls, config={config}", flush=True)
@@ -407,7 +480,11 @@ def main() -> dict:
             "asr": f"faster-whisper {args.asr}, int8, CPU, greedy, bilingual domain prompt, no language hint",
             "nlu_configs": {"rules": "deterministic rule parser",
                             "llm": f"{args.llm} via LM Studio (GGUF), reasoning off, evidence check on slots",
-                            "llm+phrasing": f"llm NLU plus {args.llm} rewording replies, grounding check"},
+                            "llm+phrasing": f"llm NLU plus {args.llm} rewording replies, grounding check",
+                            "jev": "Jev intent and yes/no heads with rule escalation, rule slots, templates",
+                            "jev+llm": f"jev NLU plus {args.llm} rewording replies, Jev judge then grounding check"},
+            "jev": None if not _JEV else {"model": _JEV["d"].model.name, "threshold": _JEV["d"].threshold,
+                                           "temperatures": _JEV["d"].temperatures},
             "tts": "Piper en_US-lessac-medium and ar_JO-kareem-medium; callers also Windows SAPI Zira",
             "caller_audio": "synthetic TTS only; Gulf lines are Gulf wording in a Jordanian Piper voice",
             "caller_repeats": "asked again, the scripted caller repeats the same line 15 percent slower",
@@ -418,6 +495,7 @@ def main() -> dict:
         "asr_by_dialect": asr_lid["asr"],
         "dialect_id_by_dialect": asr_lid["dialect_id"],
         "configs": per_config,
+        "jev_dialect_head_by_dialect": jev_dialect,
         "barge_in_by_dialect": aggregate_barge_in(trials),
         "runtime_s": round(time.time() - t0, 1),
     }

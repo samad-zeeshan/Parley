@@ -1,0 +1,150 @@
+{
+  "Qwen/Qwen3-0.6B": {
+    "model": "Qwen/Qwen3-0.6B",
+    "load_s": 7.1,
+    "heads": {
+      "intent": {
+        "temperature": 1.8791,
+        "fit_n": 21,
+        "test_n": 20,
+        "test_accuracy": 0.55,
+        "test_ece_before": 0.227,
+        "test_ece_after": 0.187
+      },
+      "yes_no": {
+        "temperature": 2.9568,
+        "fit_n": 9,
+        "test_n": 9,
+        "test_accuracy": 1.0,
+        "test_ece_before": 0.037,
+        "test_ece_after": 0.09
+      },
+      "dialect": {
+        "temperature": 2.9568,
+        "fit_n": 20,
+        "test_n": 19,
+        "test_accuracy": 0.368,
+        "test_ece_before": 0.283,
+        "test_ece_after": 0.089
+      },
+      "judge": {
+        "temperature": 40.0713,
+        "fit_n": 15,
+        "test_n": 15,
+        "test_accuracy": 0.333,
+        "test_ece_before": 0.429,
+        "test_ece_after": 0.173
+      }
+    },
+    "threshold": 0.7,
+    "threshold_table_fit_slice": [
+      {
+        "threshold": 0.5,
+        "accepted_share": 0.508,
+        "accepted_accuracy": 0.606
+      },
+      {
+        "threshold": 0.6,
+        "accepted_share": 0.215,
+        "accepted_accuracy": 0.857
+      },
+      {
+        "threshold": 0.7,
+        "accepted_share": 0.169,
+        "accepted_accuracy": 1.0
+      },
+      {
+        "threshold": 0.8,
+        "accepted_share": 0.123,
+        "accepted_accuracy": 1.0
+      },
+      {
+        "threshold": 0.9,
+        "accepted_share": 0.077,
+        "accepted_accuracy": 1.0
+      },
+      {
+        "threshold": 0.95,
+        "accepted_share": 0.077,
+        "accepted_accuracy": 1.0
+      }
+    ],
+    "forward_pass_p50_s": 0.563,
+    "forward_pass_p95_s": 0.81,
+    "passes": 128
+  },
+  "Qwen/Qwen3-1.7B": {
+    "model": "Qwen/Qwen3-1.7B",
+    "load_s": 83.9,
+    "heads": {
+      "intent": {
+        "temperature": 2.3571,
+        "fit_n": 21,
+        "test_n": 20,
+        "test_accuracy": 0.75,
+        "test_ece_before": 0.229,
+        "test_ece_after": 0.147
+      },
+      "yes_no": {
+        "temperature": 6.5365,
+        "fit_n": 9,
+        "test_n": 9,
+        "test_accuracy": 0.778,
+        "test_ece_before": 0.219,
+        "test_ece_after": 0.172
+      },
+      "dialect": {
+        "temperature": 18.1262,
+        "fit_n": 20,
+        "test_n": 19,
+        "test_accuracy": 0.421,
+        "test_ece_before": 0.597,
+        "test_ece_after": 0.162
+      },
+      "judge": {
+        "temperature": 8.1994,
+        "fit_n": 15,
+        "test_n": 15,
+        "test_accuracy": 0.667,
+        "test_ece_before": 0.246,
+        "test_ece_after": 0.339
+      }
+    },
+    "threshold": 0.7,
+    "threshold_table_fit_slice": [
+      {
+        "threshold": 0.5,
+        "accepted_share": 0.738,
+        "accepted_accuracy": 0.812
+      },
+      {
+        "threshold": 0.6,
+        "accepted_share": 0.585,
+        "accepted_accuracy": 0.895
+      },
+      {
+        "threshold": 0.7,
+        "accepted_share": 0.523,
+        "accepted_accuracy": 0.912
+      },
+      {
+        "threshold": 0.8,
+        "accepted_share": 0.415,
+        "accepted_accuracy": 1.0
+      },
+      {
+        "threshold": 0.9,
+        "accepted_share": 0.323,
+        "accepted_accuracy": 1.0
+      },
+      {
+        "threshold": 0.95,
+        "accepted_share": 0.277,
+        "accepted_accuracy": 1.0
+      }
+    ],
+    "forward_pass_p50_s": 1.468,
+    "forward_pass_p95_s": 1.995,
+    "passes": 128
+  }
+}

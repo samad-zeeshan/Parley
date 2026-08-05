@@ -20,6 +20,10 @@ speech = [
     "faster-whisper>=1.1",
     "piper-tts>=1.8.0",
 ]
+jev = [
+    "torch>=2.4",
+    "transformers>=4.51",
+]
 
 [dependency-groups]
 dev = [
