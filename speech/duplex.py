@@ -1,14 +1,6 @@
-"""Full-duplex turn taking: the mic is listened to while the agent talks, and the
-agent stops as soon as the caller starts. See ADR 0003.
+"""Full-duplex playback: the mic is heard while the agent talks, and the agent stops when the caller starts.
 
-Barge-in detection runs on every 20 ms mic frame. While the agent is playing,
-the frame must beat the agent's own expected echo by a margin, so the agent's
-voice leaking from speaker to mic does not stop it. When the VAD reports the
-start of caller speech during playback, playback stops before the next frame.
-
-The bound: onset needs 3 voiced frames (60 ms) and the stop lands on the next
-frame (20 ms), so 80 ms on an exact clock. BARGE_IN_BOUND_S is the wall-clock
-bound the real-time test enforces, with room for thread scheduling.
+Barge-in decisions come from the turn-taking machine in dialogue/turntaking.py.
 """
 
 from __future__ import annotations
@@ -19,12 +11,14 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .audio import SAMPLE_RATE
-from .vad import FRAME, FRAME_MS, EnergyVAD, frame_db
+from dialogue.turntaking import State, TurnTaking
 
+from .audio import SAMPLE_RATE
+from .vad import DEFAULT_COUPLING, FRAME, FRAME_MS, EnergyVAD, echo_extra_db, frame_db  # noqa: F401
+
+# Onset needs 3 voiced frames (60 ms) and the stop lands on the next frame (20 ms): 80 ms on an exact
+# clock. The 0.2 s bound is what the real-time test enforces, with room for thread scheduling.
 BARGE_IN_BOUND_S = 0.2
-DEFAULT_COUPLING = 0.3   # assumed speaker-to-mic gain (about -10 dB); calibrate per device
-ECHO_MARGIN_DB = 6.0
 
 
 class Playback:
@@ -54,14 +48,6 @@ class Playback:
     @property
     def played_s(self) -> float:
         return min(self.pos, len(self.pcm)) / SAMPLE_RATE
-
-
-def echo_extra_db(vad: EnergyVAD, played: np.ndarray | None, coupling: float = DEFAULT_COUPLING) -> float:
-    """How much louder than the VAD threshold a mic frame must be while `played` is going out."""
-    if played is None:
-        return 0.0
-    expected_echo_db = frame_db(played) + 20.0 * np.log10(coupling)
-    return max(0.0, expected_echo_db + ECHO_MARGIN_DB - vad.threshold_db)
 
 
 def _frame(pcm: np.ndarray, k: int) -> np.ndarray:
@@ -97,18 +83,20 @@ def simulate(agent: np.ndarray, caller: np.ndarray, echo_gain: float | None = No
     """Step both streams on one exact 20 ms clock."""
     vad = vad or EnergyVAD()
     play = Playback(agent)
+    fsm = TurnTaking(vad, State.AGENT_SPEAKING, coupling, on_barge_in=play.stop)
     onset = caller_onset_s(caller, vad.min_db)
     stopped_at = None
     n = max(len(agent), len(caller)) // FRAME + 1
     for k in range(n):
         out = play.next_frame()
+        if out is None and fsm.state is State.AGENT_SPEAKING:
+            fsm.playback_done()
         mic = _frame(caller, k).astype(np.float64)
         if out is not None and echo_gain:
             mic = mic + echo_gain * out
         mic = np.clip(mic, -32768, 32767).astype(np.int16)
-        ev = vad.push(mic, extra_db=echo_extra_db(vad, out, coupling))
-        if ev == "start" and play.playing:
-            play.stop()
+        fsm.mic(mic, out)
+        if fsm.barge_ins:
             stopped_at = (k + 1) * FRAME_MS / 1000
             break
     false_stop = stopped_at is not None and (onset is None or stopped_at < onset)
@@ -129,6 +117,7 @@ class RealtimeDuplex:
         self.echo_gain = echo_gain
         self.coupling = coupling
         self.vad = EnergyVAD()
+        self.fsm = TurnTaking(self.vad, State.AGENT_SPEAKING, coupling)
         self._last_out: np.ndarray | None = None
         self._lock = threading.Lock()
         self.onset_wall: float | None = None
@@ -171,8 +160,10 @@ class RealtimeDuplex:
             if out is not None and self.echo_gain:
                 mic = mic + self.echo_gain * out
             mic = np.clip(mic, -32768, 32767).astype(np.int16)
-            ev = self.vad.push(mic, extra_db=echo_extra_db(self.vad, out, self.coupling))
-            if ev == "start" and self.play.playing:
+            if out is None and self.fsm.state is State.AGENT_SPEAKING and not self.play.playing:
+                self.fsm.playback_done()
+            self.fsm.mic(mic, out)
+            if self.fsm.barge_ins and self.play.playing:
                 self.detect_wall = time.perf_counter()
                 self.play.stop()
                 return

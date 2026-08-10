@@ -1,9 +1,6 @@
-"""Frame-energy voice activity detection with an adaptive noise floor.
+"""Frame-energy voice activity detection with an adaptive noise floor, plus the echo margin used while the agent talks.
 
-Deliberately simple: 20 ms frames, a noise floor that follows the quietest
-recent frames, onset after a few loud frames in a row, end after a hangover of
-quiet frames. It is enough for endpointing and barge-in on clean synthetic
-audio; a neural VAD (Silero) would be the upgrade for real phone audio.
+Enough for clean synthetic audio. A neural VAD would be the upgrade for real phone lines.
 """
 
 from __future__ import annotations
@@ -14,6 +11,8 @@ from .audio import SAMPLE_RATE
 
 FRAME_MS = 20
 FRAME = SAMPLE_RATE * FRAME_MS // 1000  # 320 samples
+DEFAULT_COUPLING = 0.3   # assumed speaker-to-mic gain (about -10 dB); calibrate per device
+ECHO_MARGIN_DB = 6.0
 
 
 def frame_db(frame: np.ndarray) -> float:
@@ -66,3 +65,11 @@ class EnergyVAD:
 
     def reset(self) -> None:
         self.in_speech, self._loud, self._quiet = False, 0, 0
+
+
+def echo_extra_db(vad: EnergyVAD, played: np.ndarray | None, coupling: float = DEFAULT_COUPLING) -> float:
+    """How much louder than the VAD threshold a mic frame must be while `played` is going out."""
+    if played is None:
+        return 0.0
+    expected_echo_db = frame_db(played) + 20.0 * np.log10(coupling)
+    return max(0.0, expected_echo_db + ECHO_MARGIN_DB - vad.threshold_db)
