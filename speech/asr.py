@@ -1,10 +1,6 @@
-"""Streaming speech recognition.
+"""Speech recognition: faster-whisper on CPU, a pause-segmented variant, and the VAD-driven streaming front end.
 
-faster-whisper is not a streaming model. Streaming here means: audio arrives in
-20 ms frames, the VAD finds where an utterance starts and ends, partial
-transcripts are produced by re-decoding the growing buffer every
-`partial_every` seconds (optional, it costs CPU), and the final transcript is
-decoded once when the VAD closes the utterance. See ADR 0003.
+Whisper is not a streaming model. Streaming here means VAD endpointing, optional partial re-decodes, and one final decode.
 """
 
 from __future__ import annotations
@@ -19,10 +15,16 @@ import numpy as np
 from .audio import SAMPLE_RATE
 from .vad import FRAME, EnergyVAD
 
-# Bilingual vocabulary prompt: area names and booking words in both scripts.
-# It biases decoding toward the domain and contains no evaluation sentence (ADR 0001).
+# v1 prompt: area names and booking words in both scripts, no evaluation sentence.
 DOMAIN_PROMPT = ("Viewing booking in Dubai Marina, Al Barsha, JLT, Downtown, Al Reem Island, Khalifa City. "
                  "حجز معاينة شقة في دبي مارينا والبرشاء وجزيرة الريم، غرفتين، درهم، الساعة.")
+
+# v2 prompt. Whisper copies the style of its prompt, so an example of Gulf Arabic with English left in
+# Latin script makes it keep "Sunday" instead of writing "سندي". A test checks it shares no three-word
+# run with any scripted line.
+MIXED_PROMPT = ("Booking a viewing, studio or bedroom flat, budget in dirhams, JLT, Downtown, Business Bay, "
+                "Saadiyat. OK يعني I need a flat قريب من the metro، والإيجار around ninety thousand. "
+                "Monday بالليل or next week. تمام, book it for me.")
 
 
 SHORT_CLIP_S = 1.5
@@ -60,6 +62,48 @@ class WhisperASR:
         return Transcript(text, info.language, info.language_probability, time.perf_counter() - t0)
 
 
+def split_at_pauses(pcm: np.ndarray, min_gap_s: float = 0.15, min_db: float = 40.0, pad_frames: int = 3):
+    """Cut a clip at silences of at least min_gap_s. Shorter gaps are inside words and stay joined."""
+    from .vad import frame_db
+
+    n = len(pcm) // FRAME
+    voiced = [frame_db(pcm[k * FRAME:(k + 1) * FRAME]) > min_db for k in range(n)]
+    gap = max(1, int(min_gap_s * SAMPLE_RATE / FRAME))
+    spans, start, quiet = [], None, 0
+    for k, v in enumerate(voiced):
+        if v:
+            start = k if start is None else start
+            quiet = 0
+        elif start is not None:
+            quiet += 1
+            if quiet >= gap:
+                spans.append((start, k - quiet + 1))
+                start, quiet = None, 0
+    if start is not None:
+        spans.append((start, n - quiet))
+    return [pcm[max(0, a - pad_frames) * FRAME:min(n, b + pad_frames) * FRAME] for a, b in spans]
+
+
+class SegmentedASR:
+    """Two-pass decode: cut the clip at pauses, then let Whisper pick the language of each piece.
+
+    On this test set the TTS callers pause between languages, which flatters this method. Real speakers
+    often switch with no pause at all.
+    """
+
+    def __init__(self, asr, min_gap_s: float = 0.15):
+        self.asr = asr
+        self.min_gap_s = min_gap_s
+
+    def transcribe(self, pcm: np.ndarray, partial: bool = False, lang_hint: str | None = None) -> Transcript:
+        chunks = split_at_pauses(pcm, self.min_gap_s) or [pcm]
+        if len(chunks) == 1:
+            return self.asr.transcribe(pcm, partial=partial, lang_hint=lang_hint)
+        parts = [self.asr.transcribe(c, partial=partial, lang_hint=lang_hint) for c in chunks]
+        text = " ".join(p.text for p in parts if p.text).strip()
+        return Transcript(text, parts[0].lang, parts[0].lang_prob, sum(p.seconds for p in parts))
+
+
 class FakeASR:
     """Returns scripted transcripts in order. For tests and for timing the rest of the pipeline."""
 
@@ -86,17 +130,24 @@ class ASREvent:
     audio_seconds: float = 0.0
     decode_seconds: float = 0.0
     pcm: np.ndarray | None = None
+    hidden_seconds: float = 0.0  # decode time that runs inside the hangover, before the turn closes
 
 
 class StreamingRecognizer:
-    def __init__(self, asr, vad: EnergyVAD | None = None, preroll: float = 0.3, partial_every: float | None = None):
+    def __init__(self, asr, vad: EnergyVAD | None = None, preroll: float = 0.3, partial_every: float | None = None,
+                 early_final: bool = False):
         self.asr = asr
         self.lang_hint: str | None = None
         self.vad = vad or EnergyVAD()
         self.preroll = deque(maxlen=int(preroll * SAMPLE_RATE / FRAME))
         self.partial_every = partial_every
+        # A live system starts a speculative decode on every first quiet frame and drops it if the caller
+        # goes on. Only the decode started when the last hangover opened is ever used, so this decodes
+        # exactly that audio once, at the end, and reports how much of it the hangover hides.
+        self.early_final = early_final
         self.buffer: list[np.ndarray] = []
         self._since_partial = 0
+        self._quiet_from = 0
 
     @property
     def in_speech(self) -> bool:
@@ -111,6 +162,8 @@ class StreamingRecognizer:
             events.append(ASREvent("speech_start"))
         elif self.vad.in_speech:
             self.buffer.append(frame)
+            if self.vad._quiet == 1:
+                self._quiet_from = len(self.buffer) - 1
             self._since_partial += 1
             if self.partial_every and self._since_partial * FRAME >= self.partial_every * SAMPLE_RATE:
                 self._since_partial = 0
@@ -119,12 +172,18 @@ class StreamingRecognizer:
                 events.append(ASREvent("partial", t.text, t.lang, len(pcm) / SAMPLE_RATE, t.seconds))
         elif ev == "end":
             self.buffer.append(frame)
-            pcm = np.concatenate(self.buffer)
+            hidden = 0.0
+            if self.early_final and 0 < self._quiet_from < len(self.buffer):
+                hidden = (len(self.buffer) - self._quiet_from) * FRAME / SAMPLE_RATE
+                pcm = np.concatenate(self.buffer[:self._quiet_from])
+            else:
+                pcm = np.concatenate(self.buffer)
             t0 = time.perf_counter()
             t = self.asr.transcribe(pcm, lang_hint=self.lang_hint)
             events.append(ASREvent("final", t.text, t.lang, len(pcm) / SAMPLE_RATE,
-                                   t.seconds or time.perf_counter() - t0, pcm))
+                                   t.seconds or time.perf_counter() - t0, pcm, hidden))
             self.buffer = []
+            self._quiet_from = 0
         self.preroll.append(frame)
         return events
 

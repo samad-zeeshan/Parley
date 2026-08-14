@@ -5,6 +5,7 @@ are fakes, so the suite needs no model and no sound card.
 """
 
 import numpy as np
+import pytest
 
 from speech.asr import FakeASR, StreamingRecognizer
 from speech.audio import SAMPLE_RATE
@@ -97,3 +98,30 @@ def test_voice_call_books_from_audio_with_fake_models(svc, conn, clock):
     assert all(r.speech is not None and r.timings["total"] >= 0 for r in replies)
     assert conn.execute("select phone from bookings").fetchone()[0] == call["phone"]
     assert verify_chain(conn)
+
+
+def test_early_final_decodes_up_to_the_first_quiet_frame():
+    """The winning speculative decode starts when the hangover opens, so it hides behind the hangover."""
+    asr = FakeASR(["one utterance"])
+    rec = StreamingRecognizer(asr, early_final=True)
+    audio = np.concatenate([quiet(0.3), burst(0.8), quiet(0.8)])
+    finals = [e for f in frames(audio) for e in rec.push(f) if e.kind == "final"]
+    assert [e.text for e in finals] == ["one utterance"]
+    hangover = rec.vad.hangover_frames * FRAME / SAMPLE_RATE
+    assert finals[0].hidden_seconds == pytest.approx(hangover, abs=0.03)
+    assert asr.seen_seconds[0] <= 0.8 + 0.3 + 0.05       # the hangover's silence is not decoded
+
+
+def test_speech_during_the_hangover_is_kept_in_the_early_final():
+    asr = FakeASR(["joined"])
+    rec = StreamingRecognizer(asr, early_final=True)
+    audio = np.concatenate([quiet(0.3), burst(0.5), quiet(0.2), burst(0.5), quiet(0.8)])
+    finals = [e for f in frames(audio) for e in rec.push(f) if e.kind == "final"]
+    assert len(finals) == 1 and asr.seen_seconds[0] >= 1.2
+
+
+def test_without_early_final_nothing_is_hidden():
+    rec = StreamingRecognizer(FakeASR(["x"]))
+    audio = np.concatenate([quiet(0.3), burst(0.8), quiet(0.8)])
+    finals = [e for f in frames(audio) for e in rec.push(f) if e.kind == "final"]
+    assert finals[0].hidden_seconds == 0.0

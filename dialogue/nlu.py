@@ -146,7 +146,8 @@ class RuleNLU:
             nxt = words[i + 1] if i + 1 < len(words) else ""
             if w.isdigit() and int(w) <= 5 and (nxt in _ROOM_EN or nxt in _ROOM_AR):
                 return int(w)
-            if w in _ROOM_AR and nxt in _ONE_AR:
+            # Arabic puts the count after the noun, and the normalizer has already written وحدة as 1.
+            if w in _ROOM_AR and (nxt in _ONE_AR or nxt == "1"):
                 return 1
         return None
 

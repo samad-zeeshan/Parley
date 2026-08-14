@@ -132,3 +132,12 @@ def test_slots_the_model_left_out_come_from_the_rule_parser():
 def test_model_choice_falls_back_to_the_rule_reading():
     n = FakeLLMNLU('{"intent": "choose_option", "slots": {}}')
     assert n.parse("the second one", TODAY).choice == 2
+
+
+@pytest.mark.parametrize("text,beds", [
+    ("أبغي شقة غرفة وحدة في البرشاء", 1),     # the normalizer has already turned وحدة into 1
+    ("غرفة واحدة من فضلك", 1),
+    ("one bedroom please", 1),
+])
+def test_one_bedroom_in_both_languages(text, beds):
+    assert nlu.parse(text, TODAY).slots.get("bedrooms") == beds

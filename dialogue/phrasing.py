@@ -129,6 +129,7 @@ class Rendered:
     lang: str
     source: str                   # template | llm
     rejected: list[Violation] = field(default_factory=list)
+    rejected_text: str | None = None  # the model reply that was not spoken
 
 
 _ARABIC = re.compile(r"[؀-ۿ]")
@@ -160,7 +161,7 @@ class Phraser:
             bad.append(Violation("language", lang))
         if bad:
             self.rejections += 1
-            return Rendered(base, lang, "template", bad)
+            return Rendered(base, lang, "template", bad, rejected_text=reply)
         return Rendered(reply, lang, "llm")
 
 

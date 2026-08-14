@@ -1,17 +1,12 @@
-"""End-to-end evaluation: synthetic callers talk to the agent through ASR, NLU,
-policy, the booking API and TTS. Writes eval/results.json and eval/results.md.
+"""Forty scripted callers through each local speech config with the rule parser: ASR, code switching, calls, barge-in.
 
-    uv run --extra speech python -m eval.run_eval                 # rules NLU + local model NLU
-    uv run --extra speech python -m eval.run_eval --configs rules  # no LM Studio needed
-
-Every number is split by language and dialect: en, ar-gulf, ar-msa, mixed.
-The caller audio is TTS (Piper, Windows SAPI). No human recordings were used.
+    uv run --extra speech python -m eval.run_eval                  # every local config
+    uv run --extra speech python -m eval.run_eval --speech local   # one config
 """
 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import platform
@@ -19,259 +14,47 @@ import subprocess
 import sys
 import time
 from datetime import datetime
-from pathlib import Path
 
 import numpy as np
 
-from api.audit import entries, verify_chain
-from api.clock import DUBAI, FixedClock
-from api.db import connect
-from api.seed import seed
-from api.service import BookingService
-from dialogue.agent import Agent
-from dialogue.jev import DIALECT_TO_LABEL, HFLogitModel, JevDecider, JevNLU, JevPhraser, expected_calibration_error
-from dialogue.nlu import LLMNLU, RuleNLU
-from dialogue.phrasing import LLMPhraser, Phraser
-from speech.asr import StreamingRecognizer, WhisperASR
+from api.clock import DUBAI
 from speech.audio import SAMPLE_RATE, read_wav, silence
+from speech.backends import CONFIGS
 from speech.duplex import BARGE_IN_BOUND_S, simulate
 from speech.langid import identify, reply_language
-from speech.pipeline import VoiceCall
 from speech.textnorm import normalize_orthography
-from speech.tts import PiperTTS
-from speech.vad import FRAME, EnergyVAD
 
-from .scoring import DATE_KINDS, DIGIT_KINDS, TIME_KINDS, entity_errors, f1, percentile, slot_counts
+from .harness import (ANCHOR, CALL_KINDS, DIALECTS, HANGOVER_S, ROOT, ASRCache, render_turn, run_call,
+                      update_results)
+from .latency import MODES, turn_latency
+from .scoring import (DATE_KINDS, DIGIT_KINDS, TIME_KINDS, entity_errors, f1, percentile, slot_counts,
+                      span_errors)
 from .scripts import CALLS
-from .synth import render_to
 from .wer import ZERO, count_errors
 
-ROOT = Path(__file__).resolve().parent
-OUT = ROOT / "out"
-AUDIO = ROOT / "audio" / "calls"
-ANCHOR = datetime(2026, 10, 1, 9, 0, tzinfo=DUBAI)
-DIALECTS = ["en", "ar-gulf", "ar-msa", "mixed"]
-CALL_KINDS = {"en": "English", "gulf": "Gulf Arabic", "msa": "MSA", "switch": "code-switched"}
-MAX_TURNS = 12
-HANGOVER_S = EnergyVAD().hangover_frames * FRAME / SAMPLE_RATE
+LOCAL = ["local", "local-v1", "local-2pass", "local-base", "local-tiny"]
 
-
-# ---------------------------------------------------------------------------
-# Stage 1: caller audio and streaming ASR (cached; the same for every config)
-# ---------------------------------------------------------------------------
-
-def render_turn(call_id: str, i: int, turn: dict, voice: str, attempt: int = 0) -> Path:
-    """Attempt 0 is the scripted voice. A caller asked again repeats the line more slowly,
-    as people do: each repeat is 15 percent slower (Piper length scale, SAPI rate)."""
-    base = 1.15 if voice == "piper-slow" else 1.0
-    v = "piper" if voice == "piper-slow" else voice
-    name = f"{i:02d}.wav" if attempt == 0 else f"{i:02d}-r{attempt}.wav"
-    if v.startswith("sapi"):
-        return render_to(AUDIO / call_id / name, turn["segments"], v, sapi_rate=-2 * attempt)
-    scale = base + 0.15 * attempt
-    return render_to(AUDIO / call_id / name, turn["segments"], v, length_scale=None if scale == 1.0 else scale)
-
-
-def stream_asr(asr, pcm: np.ndarray, lang_hint: str | None) -> dict:
-    """Play the clip through the VAD-driven recognizer as 20 ms frames."""
-    rec = StreamingRecognizer(asr)
-    rec.lang_hint = lang_hint
-    stream = np.concatenate([silence(0.3), pcm, silence(HANGOVER_S + 0.3)])
-    texts, decode, finals = [], 0.0, 0
-    for k in range(len(stream) // FRAME):
-        for ev in rec.push(stream[k * FRAME:(k + 1) * FRAME]):
-            if ev.kind == "final":
-                texts.append(ev.text)
-                decode += ev.decode_seconds
-                finals += 1
-    for ev in rec.flush():
-        texts.append(ev.text)
-        decode += ev.decode_seconds
-        finals += 1
-    return {"text": " ".join(t for t in texts if t).strip(), "decode_s": decode, "segments": finals}
-
-
-class ASRCache:
-    """Streaming ASR results keyed by audio hash and language hint, stored in eval/out."""
-
-    def __init__(self, size: str):
-        self.size = size
-        self.path = OUT / f"asr_{size}.json"
-        self.data = json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
-        self.model = None
-
-    def get(self, call_id: str, line: int, attempt: int, hint: str | None) -> dict:
-        call = CALLS[call_id]
-        path = render_turn(call_id, line, call["turns"][line], call["voice"], attempt)
-        key = f"{call_id}/{line}/{attempt}/{hint}:" + hashlib.sha1(path.read_bytes()).hexdigest()[:12]
-        if key not in self.data:
-            self.model = self.model or WhisperASR(self.size)
-            pcm, _ = read_wav(str(path))
-            self.data[key] = stream_asr(self.model, pcm, hint)
-            print(f"  asr {call_id}/{line}/{attempt}: {self.data[key]['text'][:70]} "
-                  f"({self.data[key]['decode_s']:.2f}s)", flush=True)
-        return self.data[key]
-
-    def save(self) -> None:
-        OUT.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(self.data, ensure_ascii=False, indent=1), encoding="utf-8")
-
-
-def script_hint(call: dict, line: int) -> str | None:
-    """Reply language after the previous scripted line: the ASR hint used for the ASR table."""
-    if line == 0:
-        return None
-    return reply_language(identify(call["turns"][line - 1]["text"]))
-
-
-# ---------------------------------------------------------------------------
-# Stage 2: scripted caller against the agent
-# ---------------------------------------------------------------------------
-
-def next_line(call: dict, action, last: int) -> int | None:
-    """The scripted caller answers the question the agent asked with the matching line."""
-    turns = call["turns"]
-    name, args = action.name, action.args
-    if name == "confirmed":
-        return None
-    if name == "ask_slot":
-        for j, t in enumerate(turns):
-            if args["slot"] in t["slots"]:
-                return j
-    if name in ("offer",):
-        for j, t in enumerate(turns):
-            if t["intent"] == "choose_option":
-                return j
-    if name == "ask_confirm":
-        return len(turns) - 1
-    return last + 1 if last + 1 < len(turns) else None
-
-
-def run_call(call_id: str, call: dict, asr: ASRCache, config: str, tts: PiperTTS, llm_model: str,
-             keep_audio: bool = False) -> dict:
-    conn = connect(":memory:")
-    clock = FixedClock(ANCHOR)
-    seed(conn, anchor=ANCHOR.date(), rng_seed=7)
-    svc = BookingService(conn, clock)
-    if config == "rules":
-        nlu = RuleNLU()
-    elif config.startswith("jev"):
-        nlu = JevNLU(jev_decider())
-    else:
-        nlu = LLMNLU(model=llm_model, timeout=60)
-    llm_phrasing = config in ("llm+phrasing", "jev+llm")
-    phraser = Phraser(llm=LLMPhraser(model=llm_model, timeout=60) if llm_phrasing else None, clock=clock)
-    if config == "jev+llm":
-        phraser = JevPhraser(phraser, jev_decider())
-    agent = Agent(svc, conn, clock, session_id=f"{config}:{call_id}", nlu=nlu, phraser=phraser)
-    vc = VoiceCall(agent, None, tts)
-
-    turns_out, line, played = [], 0, []
-    while line is not None and len(played) < MAX_TURNS:
-        attempt = played.count(line)
-        played.append(line)
-        gold = call["turns"][line]
-        a = asr.get(call_id, line, attempt, agent.lang if len(played) > 1 else None)
-        context = agent.state.last_asked or ""
-        reply = vc.respond(a["text"], asr_seconds=a["decode_s"])
-        t = reply.turn
-        # The same NLU on the reference text separates ASR errors from NLU errors.
-        today = ANCHOR.date()
-        ref_nlu = nlu.parse(gold["text"], today) if config == "rules" else nlu.parse(gold["text"], today,
-                                                                                     context=context)
-        jev_choice = jev_conf = None
-        if t.nlu.probabilities:
-            best = max(t.nlu.probabilities, key=t.nlu.probabilities.get)
-            jev_choice = {"yes": "confirm", "no": "deny"}.get(best, best) if t.nlu.head == "yes_no" else best
-            jev_conf = t.nlu.probabilities[best]
-        turns_out.append({
-            "line": line, "attempt": attempt, "dialect": gold["dialect"], "ref": gold["text"], "hyp": a["text"],
-            "asr_segments": a["segments"], "gold_intent": gold["intent"], "intent": t.nlu.intent,
-            "gold_slots": {**gold["slots"], **({"choice": gold["choice"]} if gold["choice"] else {})},
-            "slots": {**t.nlu.slots, **({"choice": t.nlu.choice} if t.nlu.choice else {})},
-            "intent_on_ref": ref_nlu.intent,
-            "slots_on_ref": {**ref_nlu.slots, **({"choice": ref_nlu.choice} if ref_nlu.choice else {})},
-            "dialect_pred": t.dialect, "dialect_pred_ref": identify(gold["text"]).label,
-            "action": t.action, "reply": t.text, "reply_lang": t.lang, "reply_source": t.source,
-            "rejected": [v.kind for v in t.rejected], "ungrounded": [v.kind for v in t.ungrounded],
-            "nlu_source": t.nlu.source, "dropped_slots": list(t.nlu.dropped),
-            "jev_head": t.nlu.head, "jev_choice": jev_choice,
-            "jev_confidence": None if jev_conf is None else round(jev_conf, 4),
-            "timings": {k: round(v, 4) for k, v in reply.timings.items()},
-            "reply_seconds": round(reply.speech.seconds, 2) if reply.speech is not None else None,
-        })
-        if keep_audio and reply.speech is not None:
-            turns_out[-1]["_speech"] = reply.speech.pcm
-        line = next_line(call, _Action(t.action, _args_for(agent)), line)
-
-    verdicts = [{"grounded": v.grounded, "source": v.source, "p": round(v.probability, 4),
-                 "overruled": v.overruled} for v in getattr(phraser, "verdicts", [])]
-    booking = conn.execute("select status, phone from bookings").fetchall()
-    completed = booking == [("confirmed", call["phone"])] and verify_chain(conn)
-    return {"call_id": call_id, "config": config, "completed": completed, "bookings": booking,
-            "audit_ok": verify_chain(conn), "audit_entries": len(entries(conn)), "turns": turns_out,
-            "judge_verdicts": verdicts}
-
-
-class _Action:
-    def __init__(self, name, args):
-        self.name, self.args = name, args
-
-
-def _args_for(agent: Agent) -> dict:
-    s = agent.state
-    if s.last_spoken == "ask_slot":
-        return {"slot": s.last_asked}
-    return {}
-
-
-# ---------------------------------------------------------------------------
-# Stage 3: barge-in trials on the real agent and caller audio
-# ---------------------------------------------------------------------------
-
-def barge_in_trials(calls_out: list[dict]) -> list[dict]:
-    rng = np.random.default_rng(2026)
-    trials = []
-    for c in calls_out:
-        turns = c["turns"]
-        for k, t in enumerate(turns[:-1]):
-            agent_pcm = t.get("_speech")
-            if agent_pcm is None or len(agent_pcm) < 1.5 * SAMPLE_RATE:
-                continue
-            nxt = turns[k + 1]
-            call = CALLS[c["call_id"]]
-            caller_pcm, _ = read_wav(str(render_turn(c["call_id"], nxt["line"], call["turns"][nxt["line"]],
-                                                     call["voice"], nxt["attempt"])))
-            offset = float(rng.uniform(0.3, len(agent_pcm) / SAMPLE_RATE - 1.0))
-            caller = np.concatenate([silence(offset), caller_pcm])
-            r = simulate(agent_pcm, caller, echo_gain=0.25)
-            echo_only = simulate(agent_pcm, silence(len(agent_pcm) / SAMPLE_RATE + 0.5), echo_gain=0.25)
-            ok = r.barged_in and not r.false_stop and r.latency_s is not None and r.latency_s <= BARGE_IN_BOUND_S
-            trials.append({"call_id": c["call_id"], "dialect": nxt["dialect"], "agent_lang": t["reply_lang"],
-                           "offset_s": round(offset, 2), "success": ok,
-                           "latency_s": None if r.latency_s is None else round(r.latency_s, 3),
-                           "false_stop_on_echo": echo_only.barged_in})
-    return trials
-
-
-# ---------------------------------------------------------------------------
-# Stage 4: aggregate
-# ---------------------------------------------------------------------------
 
 def _r(x, n=3):
     return None if x is None else round(x, n)
 
 
-def aggregate_asr(asr: ASRCache) -> dict:
-    """ASR and dialect ID over every scripted line once (attempt 0), whether or not a call reached it."""
+def script_hint(call: dict, line: int) -> str | None:
+    """The language the agent would be replying in before this line: the ASR hint for the per-line table."""
+    return None if line == 0 else reply_language(identify(call["turns"][line - 1]["text"]))
+
+
+def aggregate_asr(cache: ASRCache) -> dict:
+    """Every scripted line once (attempt 0), whether or not a call reached it."""
     from speech.normalize import normalize
 
     today = ANCHOR.date()
-    per = {d: {"raw": ZERO, "norm": ZERO, "digit": ZERO, "date": ZERO, "time": ZERO, "n": 0,
-               "lid_hyp": 0, "lid_ref": 0} for d in DIALECTS}
+    per = {d: {"raw": ZERO, "norm": ZERO, "digit": ZERO, "date": ZERO, "time": ZERO, "n": 0, "lid": 0}
+           for d in DIALECTS}
+    cs = {"en": ZERO, "ar": ZERO, "latin": 0, "lines": 0}
     for call_id, call in CALLS.items():
         for line, t in enumerate(call["turns"]):
-            hyp = asr.get(call_id, line, 0, script_hint(call, line))["text"]
+            hyp = cache.get(call_id, line, 0, script_hint(call, line))["text"]
             p = per[t["dialect"]]
             p["n"] += 1
             p["raw"] += count_errors(normalize_orthography(t["text"]), normalize_orthography(hyp))
@@ -279,128 +62,76 @@ def aggregate_asr(asr: ASRCache) -> dict:
             p["digit"] += entity_errors(t["text"], hyp, DIGIT_KINDS, today)
             p["date"] += entity_errors(t["text"], hyp, DATE_KINDS, today)
             p["time"] += entity_errors(t["text"], hyp, TIME_KINDS, today)
-            p["lid_hyp"] += identify(hyp).label == t["dialect"]
-            p["lid_ref"] += identify(t["text"]).label == t["dialect"]
-    asr_out, lid = {}, {}
+            p["lid"] += identify(hyp).label == t["dialect"]
+            if {lang for lang, _ in t["segments"]} == {"en", "ar"}:
+                s = span_errors(t["segments"], hyp)
+                cs["en"] += s["en"]
+                cs["ar"] += s["ar"]
+                cs["latin"] += s["en_latin_kept"]
+                cs["lines"] += 1
+    asr = {}
     for d, p in per.items():
-        asr_out[d] = {
-            "utterances": p["n"],
-            "wer": _r(p["raw"].wer), "wer_normalized": _r(p["norm"].wer), "ref_words": p["raw"].ref_words,
-            "digit_wer": _r(p["digit"].wer) if p["digit"].ref_words else None, "digit_tokens": p["digit"].ref_words,
-            "date_wer": _r(p["date"].wer) if p["date"].ref_words else None, "date_tokens": p["date"].ref_words,
-            "time_wer": _r(p["time"].wer) if p["time"].ref_words else None, "time_tokens": p["time"].ref_words,
-        }
-        lid[d] = {"utterances": p["n"], "accuracy_on_asr_transcript": _r(p["lid_hyp"] / p["n"]) if p["n"] else None,
-                  "accuracy_on_reference_text": _r(p["lid_ref"] / p["n"]) if p["n"] else None}
-    return {"asr": asr_out, "dialect_id": lid}
+        asr[d] = {"lines": p["n"], "wer": _r(p["raw"].wer), "wer_normalized": _r(p["norm"].wer),
+                  "digit_wer": _r(p["digit"].wer) if p["digit"].ref_words else None,
+                  "date_wer": _r(p["date"].wer) if p["date"].ref_words else None,
+                  "time_wer": _r(p["time"].wer) if p["time"].ref_words else None,
+                  "dialect_id": _r(p["lid"] / p["n"]) if p["n"] else None}
+    codeswitch = {"lines": cs["lines"], "en_words": cs["en"].ref_words, "ar_words": cs["ar"].ref_words,
+                  "en_span_wer": _r(cs["en"].wer), "ar_span_wer": _r(cs["ar"].wer),
+                  "en_kept_latin": _r(cs["latin"] / cs["en"].ref_words) if cs["en"].ref_words else None}
+    return {"asr_by_dialect": asr, "codeswitch": codeswitch}
 
 
-def aggregate_config(calls_out: list[dict]) -> dict:
-    per = {d: {"n": 0, "intent_ok": 0, "tp": 0, "fp": 0, "fn": 0, "lat": [], "asr": [], "dlg": [], "tts": [],
-               "intent_ok_ref": 0, "tp_ref": 0, "fp_ref": 0, "fn_ref": 0, "jev": [], "accepted": 0}
-           for d in DIALECTS}
-    rejected = llm_replies = dropped = fallbacks = ungrounded_spoken = 0
-    for c in calls_out:
+def aggregate_calls(calls: list[dict]) -> dict:
+    per = {d: {"n": 0, "ok": 0, "tp": 0, "fp": 0, "fn": 0, "adh": 0, "lat": []} for d in DIALECTS}
+    for c in calls:
         for t in c["turns"]:
             p = per[t["dialect"]]
             p["n"] += 1
-            p["intent_ok"] += t["intent"] == t["gold_intent"]
-            p["intent_ok_ref"] += t["intent_on_ref"] == t["gold_intent"]
-            tpr, fpr, fnr = slot_counts(t["gold_slots"], t["slots_on_ref"])
-            p["tp_ref"] += tpr
-            p["fp_ref"] += fpr
-            p["fn_ref"] += fnr
+            p["ok"] += t["intent"] == t["gold_intent"]
             tp, fp, fn = slot_counts(t["gold_slots"], t["slots"])
-            p["tp"] += tp
-            p["fp"] += fp
-            p["fn"] += fn
-            p["lat"].append(t["timings"]["total"])
-            p["asr"].append(t["timings"]["asr"])
-            p["dlg"].append(t["timings"]["dialogue"])
-            p["tts"].append(t["timings"]["tts"])
-            rejected += bool(t["rejected"])
-            llm_replies += t["reply_source"] == "llm"
-            dropped += len(t["dropped_slots"])
-            fallbacks += t["nlu_source"] == "rules-fallback"
-            ungrounded_spoken += bool(t["ungrounded"])
-            if t.get("jev_confidence") is not None:
-                p["jev"].append((t["jev_confidence"], t["jev_choice"] == t["gold_intent"]))
-                p["accepted"] += t["nlu_source"] == "jev"
-    by = {}
-    for d, p in per.items():
-        n = p["n"]
-        by[d] = {
-            "turns": n,
-            "intent_accuracy": _r(p["intent_ok"] / n) if n else None,
-            "slot_f1": _r(f1(p["tp"], p["fp"], p["fn"])),
-            "intent_accuracy_on_reference_text": _r(p["intent_ok_ref"] / n) if n else None,
-            "slot_f1_on_reference_text": _r(f1(p["tp_ref"], p["fp_ref"], p["fn_ref"])),
-            "latency_p50_s": _r(percentile(p["lat"], 50), 2) if n else None,
-            "latency_p95_s": _r(percentile(p["lat"], 95), 2) if n else None,
-            "asr_p50_s": _r(percentile(p["asr"], 50), 2) if n else None,
-            "dialogue_p50_s": _r(percentile(p["dlg"], 50), 3) if n else None,
-            "tts_p50_s": _r(percentile(p["tts"], 50), 2) if n else None,
-            "jev_ece": _r(expected_calibration_error(p["jev"])) if p["jev"] else None,
-            "jev_accuracy_before_cascade": _r(sum(ok for _, ok in p["jev"]) / len(p["jev"])) if p["jev"] else None,
-            "jev_accepted_share": _r(p["accepted"] / len(p["jev"])) if p["jev"] else None,
-        }
-    all_lat = [x for p in per.values() for x in p["lat"]]
+            p["tp"], p["fp"], p["fn"] = p["tp"] + tp, p["fp"] + fp, p["fn"] + fn
+            p["adh"] += t["adherent"]
+            p["lat"].append(turn_latency(t, "early_decode"))
+    by = {d: {"turns": p["n"], "intent_accuracy": _r(p["ok"] / p["n"]) if p["n"] else None,
+              "slot_f1": _r(f1(p["tp"], p["fp"], p["fn"])),
+              "reply_language_adherence": _r(p["adh"] / p["n"]) if p["n"] else None,
+              "latency_p95_s": _r(percentile(p["lat"], 95), 2) if p["n"] else None} for d, p in per.items()}
     tasks = {}
     for kind in CALL_KINDS:
-        cs = [c for c in calls_out if c["call_id"].split("-")[0] == kind]
+        cs = [c for c in calls if c["kind"] == kind]
         tasks[kind] = {"completed": sum(c["completed"] for c in cs), "calls": len(cs),
-                       "rate": _r(sum(c["completed"] for c in cs) / len(cs)) if cs else None,
                        "turns_per_call": [len(c["turns"]) for c in cs]}
-    return {
-        "by_dialect": by,
-        "task_completion_by_call_language": tasks,
-        "latency_all_turns": {"p50_s": _r(percentile(all_lat, 50), 2), "p95_s": _r(percentile(all_lat, 95), 2),
-                              "turns": len(all_lat), "p95_over_1_5s": percentile(all_lat, 95) > 1.5},
-        "llm_replies_spoken": llm_replies, "llm_replies_rejected_by_grounding": rejected,
-        "model_slots_dropped_without_evidence": dropped, "nlu_fallbacks_to_rules": fallbacks,
-        "spoken_replies_with_ungrounded_facts": ungrounded_spoken,
-        "jev_ece_all_turns": _r(expected_calibration_error([x for p in per.values() for x in p["jev"]]))
-        if any(p["jev"] for p in per.values()) else None,
-        "judge": _judge_summary([v for c in calls_out for v in c.get("judge_verdicts", [])]),
-    }
+    turns = [t for c in calls for t in c["turns"]]
+    return {"by_dialect": by, "task_completion_by_call_language": tasks, "turns": len(turns),
+            "completed": sum(c["completed"] for c in calls), "calls": len(calls),
+            "wrong_actions": sum(len(c["wrong_actions"]) for c in calls),
+            "spoken_replies_with_ungrounded_facts": sum(c["spoken_ungrounded"] for c in calls),
+            "latency": {m: {"p50_s": _r(percentile([turn_latency(t, m) for t in turns], 50), 2),
+                            "p95_s": _r(percentile([turn_latency(t, m) for t in turns], 95), 2)} for m in MODES}}
 
 
-def _judge_summary(vs: list[dict]) -> dict | None:
-    if not vs:
-        return None
-    return {"replies_judged": len(vs), "decided_by_jev": sum(v["source"] == "jev" for v in vs),
-            "escalated_to_check": sum(v["source"] == "check" for v in vs),
-            "jev_grounded_overruled_by_check": sum(v["overruled"] for v in vs),
-            "rejected": sum(not v["grounded"] for v in vs)}
-
-
-_JEV = {}
-
-
-def jev_decider() -> JevDecider:
-    if "d" not in _JEV:
-        _JEV["d"] = JevDecider(HFLogitModel())
-    return _JEV["d"]
-
-
-def jev_dialect_eval(asr: ASRCache) -> dict:
-    """The Jev dialect head on every scripted line, on the reference text and on the ASR text."""
-    d = jev_decider()
-    per = {x: {"ref": [], "hyp": []} for x in DIALECTS}
-    for call_id, call in CALLS.items():
-        for line, t in enumerate(call["turns"]):
-            hyp = asr.get(call_id, line, 0, script_hint(call, line))["text"]
-            for key, text in (("ref", t["text"]), ("hyp", hyp)):
-                choice, p, _ = d.decide("dialect", text=text)
-                per[t["dialect"]][key].append((p, DIALECT_TO_LABEL[choice] == t["dialect"]))
-    out = {}
-    for x, v in per.items():
-        out[x] = {"lines": len(v["ref"]),
-                  "accuracy_on_reference_text": _r(sum(ok for _, ok in v["ref"]) / len(v["ref"])),
-                  "ece_on_reference_text": _r(expected_calibration_error(v["ref"])),
-                  "accuracy_on_asr_transcript": _r(sum(ok for _, ok in v["hyp"]) / len(v["hyp"])),
-                  "ece_on_asr_transcript": _r(expected_calibration_error(v["hyp"]))}
-    return out
+def barge_in_trials(calls: list[dict]) -> list[dict]:
+    """The next caller line played over the agent's real Piper reply, at a random offset, with echo."""
+    rng = np.random.default_rng(2026)
+    trials = []
+    for c in calls:
+        turns = c["turns"]
+        for k, t in enumerate(turns[:-1]):
+            agent_pcm = t.get("_speech")
+            if agent_pcm is None or len(agent_pcm) < 1.5 * SAMPLE_RATE:
+                continue
+            nxt = turns[k + 1]
+            call = CALLS[c["call_id"]]
+            caller_pcm = read_wav(str(render_turn(c["call_id"], nxt["line"], call["turns"][nxt["line"]],
+                                                  call["voice"], nxt["attempt"])))[0]
+            offset = float(rng.uniform(0.3, len(agent_pcm) / SAMPLE_RATE - 1.0))
+            r = simulate(agent_pcm, np.concatenate([silence(offset), caller_pcm]), echo_gain=0.25)
+            echo_only = simulate(agent_pcm, silence(len(agent_pcm) / SAMPLE_RATE + 0.5), echo_gain=0.25)
+            ok = r.barged_in and not r.false_stop and r.latency_s is not None and r.latency_s <= BARGE_IN_BOUND_S
+            trials.append({"call_id": c["call_id"], "dialect": nxt["dialect"], "success": ok,
+                           "latency_s": _r(r.latency_s), "false_stop_on_echo": echo_only.barged_in})
+    return trials
 
 
 def aggregate_barge_in(trials: list[dict]) -> dict:
@@ -410,8 +141,8 @@ def aggregate_barge_in(trials: list[dict]) -> dict:
         lats = [t["latency_s"] for t in ts if t["latency_s"] is not None]
         out[d] = {"trials": len(ts), "success": sum(t["success"] for t in ts),
                   "rate": _r(sum(t["success"] for t in ts) / len(ts)) if ts else None,
-                  "latency_max_s": _r(max(lats)) if lats else None,
                   "latency_p50_s": _r(percentile(lats, 50)) if lats else None,
+                  "latency_max_s": _r(max(lats)) if lats else None,
                   "false_stops_on_echo_only": sum(t["false_stop_on_echo"] for t in ts)}
     return out
 
@@ -427,88 +158,54 @@ def machine() -> dict:
             "python": sys.version.split()[0]}
 
 
-def main() -> dict:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--asr", default=os.environ.get("PARLEY_ASR_MODEL", "small"))
-    ap.add_argument("--configs", default="rules,llm,llm+phrasing,jev,jev+llm")
-    ap.add_argument("--llm", default=os.environ.get("PARLEY_LLM_MODEL", "qwen/qwen3.5-9b"))
-    args = ap.parse_args()
-    configs = args.configs.split(",")
+def _strip(calls: list[dict]) -> list[dict]:
+    return [{**c, "turns": [{k: v for k, v in t.items() if not k.startswith("_")} for t in c["turns"]]} for c in calls]
 
-    t0 = time.time()
-    print(f"stage 1: caller audio and streaming ASR ({args.asr}) for every scripted line", flush=True)
-    asr = ASRCache(args.asr)
-    asr_lid = aggregate_asr(asr)
-    asr.save()
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--speech", default=",".join(LOCAL))
+    args = ap.parse_args()
+    from speech.tts import PiperTTS
+
     tts = PiperTTS()
     tts.synthesize("warm up", "en")
     tts.synthesize("تجربة", "ar")
+    path = ROOT / "transcripts.json"
+    old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    transcripts = old if old.get("calls") and set(old["calls"]) <= set(CONFIGS) else {"calls": {}}
 
-    if any(c.startswith("llm") for c in configs):
-        # Load the model before timing anything: the first request includes loading it into memory.
-        from speech.normalize import normalize as _norm
+    for cfg in args.speech.split(","):
+        t0 = time.time()
+        print(f"{cfg}: ASR over every scripted line", flush=True)
+        cache = ASRCache(cfg)
+        part = aggregate_asr(cache)
+        cache.save()
+        print(f"{cfg}: forty calls", flush=True)
+        calls = [run_call(cid, call, cache.get, "rules", tts, keep_audio=cfg == "local") for cid, call in CALLS.items()]
+        cache.save()
+        part["dialogue"] = aggregate_calls(calls)
+        part["description"] = CONFIGS[cfg].description
+        part["runtime_s"] = round(time.time() - t0, 1)
+        update_results("speech", {cfg: part}, merge=True)
+        print(f"{cfg}: completed {part['dialogue']['completed']}/40, en-span WER "
+              f"{part['codeswitch']['en_span_wer']}, {part['runtime_s']} s", flush=True)
+        if cfg == "local":
+            trials = barge_in_trials(calls)
+            update_results("barge_in_by_dialect", aggregate_barge_in(trials))
+            transcripts["barge_in_trials"] = trials
+        transcripts["calls"][cfg] = _strip(calls)
+        path.write_text(json.dumps(transcripts, ensure_ascii=False, indent=0), encoding="utf-8")
 
-        try:
-            LLMNLU(model=args.llm, timeout=300).raw(_norm("hello", ANCHOR.date()), ANCHOR.date())
-        except Exception as e:  # noqa: BLE001
-            print(f"  model warm-up failed: {e}", flush=True)
-
-    jev_dialect = None
-    if any(c.startswith("jev") for c in configs):
-        print("  loading Jev model", flush=True)
-        jev_decider().decide("yes_no", text="yes", question="ok?")  # load and warm up before timing
-        jev_dialect = jev_dialect_eval(asr)
-
-    results_calls, per_config = {}, {}
-    for config in configs:
-        print(f"stage 2: scripted calls, config={config}", flush=True)
-        outs = [run_call(cid, call, asr, config, tts, args.llm, keep_audio=(config == "rules"))
-                for cid, call in CALLS.items()]
-        asr.save()
-        for o in outs:
-            print(f"  {o['call_id']}: completed={o['completed']} turns={len(o['turns'])}", flush=True)
-        results_calls[config] = outs
-        per_config[config] = aggregate_config(outs)
-
-    print("stage 3: barge-in trials", flush=True)
-    trials = barge_in_trials(results_calls["rules"])
-
-    results = {
+    update_results("machine", machine())
+    update_results("setup", {
         "generated_at": datetime.now(DUBAI).isoformat(timespec="seconds"),
-        "machine": machine(),
-        "setup": {
-            "asr": f"faster-whisper {args.asr}, int8, CPU, greedy, bilingual domain prompt, no language hint",
-            "nlu_configs": {"rules": "deterministic rule parser",
-                            "llm": f"{args.llm} via LM Studio (GGUF), reasoning off, evidence check on slots",
-                            "llm+phrasing": f"llm NLU plus {args.llm} rewording replies, grounding check",
-                            "jev": "Jev intent and yes/no heads with rule escalation, rule slots, templates",
-                            "jev+llm": f"jev NLU plus {args.llm} rewording replies, Jev judge then grounding check"},
-            "jev": None if not _JEV else {"model": _JEV["d"].model.name, "threshold": _JEV["d"].threshold,
-                                           "temperatures": _JEV["d"].temperatures},
-            "tts": "Piper en_US-lessac-medium and ar_JO-kareem-medium; callers also Windows SAPI Zira",
-            "caller_audio": "synthetic TTS only; Gulf lines are Gulf wording in a Jordanian Piper voice",
-            "caller_repeats": "asked again, the scripted caller repeats the same line 15 percent slower",
-            "calls": len(CALLS), "scripted_lines": sum(len(c["turns"]) for c in CALLS.values()),
-            "reference_day": ANCHOR.isoformat(), "vad_hangover_s": HANGOVER_S,
-            "barge_in_bound_s": BARGE_IN_BOUND_S, "barge_in_echo_gain": 0.25,
-        },
-        "asr_by_dialect": asr_lid["asr"],
-        "dialect_id_by_dialect": asr_lid["dialect_id"],
-        "configs": per_config,
-        "jev_dialect_head_by_dialect": jev_dialect,
-        "barge_in_by_dialect": aggregate_barge_in(trials),
-        "runtime_s": round(time.time() - t0, 1),
-    }
-    (ROOT / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
-    detail = {k: [{**c, "turns": [{kk: vv for kk, vv in t.items() if not kk.startswith("_")} for t in c["turns"]]}
-                  for c in v] for k, v in results_calls.items()}
-    (ROOT / "transcripts.json").write_text(json.dumps({"calls": detail, "barge_in_trials": trials}, ensure_ascii=False,
-                                               indent=1), encoding="utf-8")
-    from .report import write_markdown
-
-    write_markdown(results, ROOT / "results.md")
-    print(f"done in {results['runtime_s']} s", flush=True)
-    return results
+        "calls": len(CALLS), "scripted_lines": sum(len(c["turns"]) for c in CALLS.values()),
+        "reference_day": ANCHOR.isoformat(), "vad_hangover_s": HANGOVER_S, "barge_in_bound_s": BARGE_IN_BOUND_S,
+        "caller_audio": "synthetic TTS only: Piper en_US-lessac and ar_JO-kareem, Windows SAPI Zira and David",
+        "real_audio": "none; Bulbul has no public release found and the NADI 2026 sets on Hugging Face state no licence",
+        "dialogue": "rule parser, templates, grounding check",
+    })
 
 
 if __name__ == "__main__":

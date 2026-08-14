@@ -1,11 +1,6 @@
-"""Scripted callers. Synthetic only: every line was written for this project.
+"""The eight hand-written v1 callers, kept word for word so v2 numbers can sit next to v1.
 
-Each turn carries its gold labels (dialect, intent, slots, choice) for scoring,
-and its (language, text) segments so code-switched lines are voiced per segment.
-The reference day is Thursday 2026-10-01, 09:00 Dubai time.
-
-Dialect labels: en, ar-gulf (Emirati and wider Gulf wording), ar-msa, mixed
-(Gulf Arabic and English in one utterance).
+Reference day is Thursday 2026-10-01, 09:00 Dubai time. Labels: en, ar-gulf, ar-msa, mixed.
 """
 
 from __future__ import annotations
@@ -24,7 +19,7 @@ def T(segments, dialect, intent, slots=None, choice=None):
     }
 
 
-CALLS = {
+V1_CALLS = {
     "en-booking": {
         "language": "en", "voice": "piper", "phone": "0501234567",
         "turns": [

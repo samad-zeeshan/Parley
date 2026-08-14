@@ -39,6 +39,8 @@ class TurnResult:
     ungrounded: list[Violation] = field(default_factory=list)  # violations in the spoken text: must be empty
     tools: list[str] = field(default_factory=list)
     timings: dict = field(default_factory=dict)
+    action_args: dict = field(default_factory=dict)     # scalar arguments only: slot, next, reason, note
+    rejected_text: str | None = None
 
 
 class Agent:
@@ -103,6 +105,8 @@ class Agent:
             text=rendered.text, lang=self.lang, action=action.name, dialect=lid.label, nlu=nlu, normalized=norm,
             source=rendered.source, rejected=rendered.rejected, ungrounded=final_violations, tools=called,
             timings={"normalize": t1 - t0, "nlu": t2 - t1, "policy_tools": t3 - t2, "phrasing": t4 - t3},
+            action_args={k: v for k, v in action.args.items() if isinstance(v, (str, int))},
+            rejected_text=rendered.rejected_text,
         )
 
     def _execute(self, action: Action) -> str | None:

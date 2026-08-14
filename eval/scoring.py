@@ -1,19 +1,20 @@
-"""Scoring for the evaluation harness.
+"""Scoring for the evaluation harness: entity error rates, per-language span errors, slot F1, percentiles.
 
-Digit, date and time error rates follow "The Hidden Cost of Digits": run the
-same normalizer over reference and hypothesis, pull out the entity tokens of
-one kind in order, and compute the error rate over that token sequence. A phone
-number contributes one token per digit, so one wrong digit is one error in ten.
-An amount, a date, or a time is one token each; a time window is two.
+Entity error rates follow arXiv 2609.21084: one token per phone digit, one per amount, date or time.
 """
 
 from __future__ import annotations
 
 from datetime import date
 
-from speech.normalize import normalize
+import re
 
-from .wer import ErrorCounts, count_errors
+from speech.normalize import normalize
+from speech.textnorm import normalize_orthography
+
+from .wer import ZERO, ErrorCounts, align_indices, count_errors
+
+_LATIN = re.compile(r"[a-z]")
 
 DIGIT_KINDS = {"phone", "number"}
 DATE_KINDS = {"date"}
@@ -36,6 +37,38 @@ def entity_tokens(text: str, kinds: set[str], today: date) -> list[str]:
 
 def entity_errors(ref: str, hyp: str, kinds: set[str], today: date) -> ErrorCounts:
     return count_errors(" ".join(entity_tokens(ref, kinds, today)), " ".join(entity_tokens(hyp, kinds, today)))
+
+
+def span_errors(segments: list[tuple[str, str]], hyp: str) -> dict:
+    """Errors on the English and on the Arabic words of one reference line, from one alignment.
+
+    Scored apart as in arXiv 2605.19069, because a single WER hides that the English inside an
+    Arabic sentence is what gets lost. English written in Arabic script counts as an error.
+    """
+    ref, tags = [], []
+    for lang, text in segments:
+        words = normalize_orthography(text).split()
+        ref += words
+        tags += [lang] * len(words)
+    h = normalize_orthography(hyp).split()
+    counts = {"en": [0, 0, 0], "ar": [0, 0, 0]}  # substitutions, deletions, insertions
+    latin, last = 0, None
+    for i, j in align_indices(ref, h):
+        if i is None:
+            # An inserted word belongs to the span it follows, or to the first span if nothing came before.
+            counts[last or (tags[0] if tags else "ar")][2] += 1
+            continue
+        last = tags[i]
+        if j is None:
+            counts[last][1] += 1
+        else:
+            counts[last][0] += ref[i] != h[j]
+            latin += last == "en" and bool(_LATIN.search(h[j]))
+    n = {k: tags.count(k) for k in counts}
+    out = {k: ErrorCounts(*v, n[k]) if n[k] or any(v) else ZERO for k, v in counts.items()}
+    out["en_latin_kept"] = latin
+    out["latin_kept"] = latin / n["en"] if n["en"] else None
+    return out
 
 
 def slot_counts(gold: dict, pred: dict) -> tuple[int, int, int]:

@@ -34,8 +34,8 @@ class ErrorCounts:
 ZERO = ErrorCounts(0, 0, 0, 0)
 
 
-def align(ref: list[str], hyp: list[str]) -> list[tuple[str | None, str | None]]:
-    """Return the aligned pairs (ref_token, hyp_token); None marks a gap."""
+def align_indices(ref: list[str], hyp: list[str]) -> list[tuple[int | None, int | None]]:
+    """Aligned index pairs (i, j) into ref and hyp; None marks a gap."""
     n, m = len(ref), len(hyp)
     d = [[0] * (m + 1) for _ in range(n + 1)]
     for i in range(n + 1):
@@ -46,20 +46,25 @@ def align(ref: list[str], hyp: list[str]) -> list[tuple[str | None, str | None]]
         for j in range(1, m + 1):
             cost = 0 if ref[i - 1] == hyp[j - 1] else 1
             d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
-    pairs: list[tuple[str | None, str | None]] = []
+    pairs: list[tuple[int | None, int | None]] = []
     i, j = n, m
     while i > 0 or j > 0:
         if i > 0 and j > 0 and d[i][j] == d[i - 1][j - 1] + (0 if ref[i - 1] == hyp[j - 1] else 1):
-            pairs.append((ref[i - 1], hyp[j - 1]))
+            pairs.append((i - 1, j - 1))
             i, j = i - 1, j - 1
         elif i > 0 and d[i][j] == d[i - 1][j] + 1:
-            pairs.append((ref[i - 1], None))
+            pairs.append((i - 1, None))
             i -= 1
         else:
-            pairs.append((None, hyp[j - 1]))
+            pairs.append((None, j - 1))
             j -= 1
     pairs.reverse()
     return pairs
+
+
+def align(ref: list[str], hyp: list[str]) -> list[tuple[str | None, str | None]]:
+    """Return the aligned pairs (ref_token, hyp_token); None marks a gap."""
+    return [(None if i is None else ref[i], None if j is None else hyp[j]) for i, j in align_indices(ref, hyp)]
 
 
 def count_errors(ref: str, hyp: str) -> ErrorCounts:
