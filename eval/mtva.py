@@ -24,6 +24,7 @@ CONDITIONS = ["reference", "asr:local", "asr:hosted", "noise@0.05", "noise@0.1",
 # The 9B model with rewording costs two model calls a turn, so it runs on the two conditions that matter most.
 PLAN = {
     "rules": CONDITIONS,
+    "rules-nocarry": CONDITIONS,   # v1 behaviour: every message parsed on its own
     "jev": CONDITIONS,
     "llm": CONDITIONS,
     "llm+phrasing": ["reference", "asr:local", "asr:hosted"],

@@ -165,6 +165,8 @@ def next_line(call: dict, action: str, args: dict, last: int, played: list[int])
     turns = call["turns"]
     if action in ("confirmed", "goodbye", "cancelled"):
         return None
+    if action == "listen":
+        return last  # told to go on after saying everything, a caller says it again
     nxt = last + 1
     if nxt < len(turns) and turns[nxt].get("volunteer") and nxt not in played:
         return nxt
@@ -269,7 +271,7 @@ def make_dialogue(config: str, clock, llm_model: str = "qwen/qwen3.5-9b"):
     from dialogue.nlu import LLMNLU
     from dialogue.phrasing import LLMPhraser
 
-    if config == "rules":
+    if config in ("rules", "rules-nocarry"):
         nlu = RuleNLU()
     elif config.startswith("jev"):
         from dialogue.jev import JevNLU
@@ -310,7 +312,8 @@ def run_call(call_id: str, call: dict, source, dialogue: str = "rules", tts=None
     if service is not None:
         svc = service(svc)
     nlu, phraser = make_dialogue(dialogue, clock, llm_model)
-    agent = Agent(svc, conn, clock, session_id=f"{dialogue}:{call_id}", nlu=nlu, phraser=phraser)
+    agent = Agent(svc, conn, clock, session_id=f"{dialogue}:{call_id}", nlu=nlu, phraser=phraser,
+                  carry=not dialogue.endswith("-nocarry"))
     vc = VoiceCall(agent, None, tts)
     g = gold_constraints(call)
 

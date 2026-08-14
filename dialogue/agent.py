@@ -9,21 +9,52 @@ this session; holds and bookings come from the API's answers.
 
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass, field
+from datetime import date
 
 from api.service import BookingError, HoldExpired, SlotUnavailable
 from speech.langid import identify, reply_language
-from speech.normalize import Normalized, normalize
+from speech.normalize import Normalized, _norm_word, normalize
 
 from .grounding import Facts, Violation, ungrounded
 from .nlu import RuleNLU
-from .phrasing import Phraser, action_slots
+from .phrasing import Phraser, action_slots, template
 from .policy import Action, DialogueState, decide
 from .schema import NLUResult
 from .tools import ToolExecutor, ToolRejected
 
 MAX_STEPS = 6
+MAX_CARRY = 2
+
+_DIGIT_WORDS = {_norm_word(w) for w in [
+    "zero", "oh", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+    "صفر", "واحد", "اثنين", "ثنين", "ثلاثة", "ثلاث", "أربعة", "اربع", "خمسة", "خمس", "ستة", "ست", "سبعة", "سبع",
+    "ثمانية", "ثمان", "تسعة", "تسع"]}
+_CONNECTORS = {_norm_word(w) for w in ["and", "between", "to", "from", "or", "و", "بين", "إلى", "الى", "من", "أو"]}
+
+
+def open_ended(text: str, today: date | None = None) -> bool:
+    """The message stops mid-thought: on a connector, or inside a run of spoken digits with no full phone yet.
+
+    MTVA (arXiv 2609.20152) splits caller turns across messages; answering the first half on its own
+    loses phone numbers and time windows.
+    """
+    words = [_norm_word(w) for w in re.findall(r"[^\W_]+", text)]
+    if not words:
+        return False
+    if words[-1] in _CONNECTORS:
+        return True
+    run = 0
+    for w in reversed(words):
+        if w in _DIGIT_WORDS or (w.isdigit() and len(w) == 1):
+            run += 1
+        else:
+            break
+    if run < 2:
+        return False
+    return not any(e.kind == "phone" for e in normalize(text, today or date(2026, 1, 1)).entities)
 
 
 @dataclass
@@ -45,7 +76,7 @@ class TurnResult:
 
 class Agent:
     def __init__(self, service, conn, clock, session_id: str, nlu=None, phraser: Phraser | None = None,
-                 metrics=None):
+                 metrics=None, carry: bool = True):
         self.svc = service
         self.clock = clock
         self.session_id = session_id
@@ -55,14 +86,27 @@ class Agent:
         self.tools = ToolExecutor(service, conn, session_id, metrics=metrics)
         self.state = DialogueState()
         self.lang = "en"
+        self.pending: str | None = None
+        self.carry = carry
+        self.carried = 0
 
     def turn(self, text: str) -> TurnResult:
         t0 = time.perf_counter()
         today = self.clock.now().date()
+        if self.pending:
+            text, self.pending = f"{self.pending} {text}", None
         lid = identify(text)
         if lid.ar_tokens + lid.en_tokens > 0:
             self.lang = reply_language(lid)   # reply in the language the caller used last
         norm = normalize(text, today)
+        if self.carry and self.carried < MAX_CARRY and open_ended(text, today):
+            self.carried += 1
+            self.pending = text
+            reply = template(Action("listen"), self.lang)
+            return TurnResult(text=reply, lang=self.lang, action="listen", dialect=lid.label,
+                              nlu=NLUResult("unclear", source="carry"), normalized=norm,
+                              ungrounded=ungrounded(reply, Facts(), today))
+        self.carried = 0
         t1 = time.perf_counter()
         if isinstance(self.nlu, RuleNLU):
             nlu = self.nlu.parse(text, today, norm)

@@ -105,6 +105,8 @@ def template(action: Action, lang: str) -> str:
         return f"تم الحجز. موعد المعاينة {when} في {s['address_ar']}. الوكيل {s['agent_name_ar']}. شكرا لك."
     if action.name == "cancelled":
         return "Your booking is cancelled." if en else "تم إلغاء الحجز."
+    if action.name == "listen":
+        return "Go on." if en else "تفضل، كمّل."
     if action.name == "goodbye":
         return "Thank you, goodbye." if en else "شكرا لك، مع السلامة."
     if action.name == "redirect":
