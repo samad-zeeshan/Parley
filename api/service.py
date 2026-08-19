@@ -37,6 +37,12 @@ class Conflict(BookingError):
     code = "conflict"
 
 
+class ServiceUnavailable(BookingError):
+    """The booking backend did not answer. Raised by the noisy wrapper in the evaluation, and by real outages."""
+
+    code = "unavailable"
+
+
 def normalize_phone(phone: str) -> str:
     """Accept 05XXXXXXXX, +9715XXXXXXXX or 9715XXXXXXXX; return the 0-prefixed form."""
     digits = re.sub(r"\D", "", phone or "")

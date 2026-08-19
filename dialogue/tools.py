@@ -17,13 +17,22 @@ import sqlite3
 from jsonschema import Draft202012Validator
 
 from api import audit
-from api.service import BookingError, BookingService
+from api.service import BookingError, BookingService, ServiceUnavailable
 
 from .schema import TOOL_SCHEMAS
 
 _VALIDATORS = {name: Draft202012Validator(schema) for name, schema in TOOL_SCHEMAS.items()}
 _METRIC_ACTION = {"list_slots": "list", "hold_slot": "hold", "release_hold": "release",
                   "confirm_booking": "confirm", "cancel_booking": "cancel"}
+
+
+class ToolFailed(Exception):
+    """The backend did not give a usable answer after one retry: down, timed out, or inconsistent."""
+
+    def __init__(self, tool: str, reason: str):
+        super().__init__(f"{tool}: {reason}")
+        self.tool = tool
+        self.reason = reason
 
 
 class ToolRejected(Exception):
@@ -67,16 +76,30 @@ class ToolExecutor:
         if tool == "cancel_booking" and args["booking_id"] not in self.booking_ids:
             raise self._reject(tool, args, "no such booking in this session")
 
+    def request_callback(self, phone: str, reason: str) -> None:
+        """The callback queue is the local audit log, which stays writable when the booking API is down."""
+        self._log("callback_requested", {"phone": phone, "reason": reason})
+
     def call(self, tool: str, args: dict):
         args = dict(args)
         self.validate(tool, args)
         self._log("tool_call", {"tool": tool, "args": args})
-        try:
-            out = self._run(tool, args)
-        except BookingError as e:
-            self._log("tool_failed", {"tool": tool, "error": e.code})
-            self._count(tool, e.code)
-            raise
+        # One retry. confirm_booking is idempotent on its key, so a retry after a timeout that did the
+        # work replays the booking instead of making a second one.
+        for attempt in (1, 2):
+            try:
+                out = self._run(tool, dict(args))
+                break
+            except (ServiceUnavailable, TimeoutError) as e:
+                reason = "timeout" if isinstance(e, TimeoutError) else "unavailable"
+                self._log("tool_failed", {"tool": tool, "error": reason, "attempt": attempt})
+                self._count(tool, reason)
+                if attempt == 2:
+                    raise ToolFailed(tool, reason) from e
+            except BookingError as e:
+                self._log("tool_failed", {"tool": tool, "error": e.code})
+                self._count(tool, e.code)
+                raise
         self._count(tool, "replay" if isinstance(out, dict) and out.get("replayed") else "ok")
         return out
 

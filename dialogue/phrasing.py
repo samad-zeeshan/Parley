@@ -105,6 +105,15 @@ def template(action: Action, lang: str) -> str:
         return f"تم الحجز. موعد المعاينة {when} في {s['address_ar']}. الوكيل {s['agent_name_ar']}. شكرا لك."
     if action.name == "cancelled":
         return "Your booking is cancelled." if en else "تم إلغاء الحجز."
+    if action.name == "unavailable":
+        # Neutral on purpose: after a timeout or a garbled answer the agent cannot know whether a
+        # booking went through, so it claims neither.
+        phone = a.get("phone")
+        if en:
+            return ("Sorry, the booking system is not answering properly, so I cannot confirm anything right now. "
+                    + (f"We will call you back on {phone}." if phone else "Please call again in a few minutes."))
+        return ("عذرا، نظام الحجز ما يرد عدل الحين، فما أقدر أأكد لك شي. "
+                + (f"بنتصل فيك على {phone}." if phone else "اتصل مرة ثانية بعد دقايق."))
     if action.name == "listen":
         return "Go on." if en else "تفضل، كمّل."
     if action.name == "goodbye":

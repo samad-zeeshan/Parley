@@ -23,7 +23,7 @@ from .nlu import RuleNLU
 from .phrasing import Phraser, action_slots, template
 from .policy import Action, DialogueState, decide
 from .schema import NLUResult
-from .tools import ToolExecutor, ToolRejected
+from .tools import ToolExecutor, ToolFailed, ToolRejected
 
 MAX_STEPS = 6
 MAX_CARRY = 2
@@ -89,6 +89,7 @@ class Agent:
         self.pending: str | None = None
         self.carry = carry
         self.carried = 0
+        self.callback_requested = False
 
     def turn(self, text: str) -> TurnResult:
         t0 = time.perf_counter()
@@ -127,6 +128,15 @@ class Agent:
             except ToolRejected:
                 action = Action("error")
                 break
+            except ToolFailed as e:
+                # Safe recovery after arXiv 2606.31307: say the system failed, promise nothing the
+                # database has not confirmed, and queue a callback when the phone number is known.
+                self.state.tool_error = e.reason
+                action = decide(self.state)
+                if self.state.slots.get("phone") and not self.callback_requested:
+                    self.tools.request_callback(self.state.slots["phone"], f"{e.tool}: {e.reason}")
+                    self.callback_requested = True
+                break
             action = decide(self.state)
             if note and action.name == "offer":
                 action = Action("offer", {**action.args, "note": note})
@@ -156,11 +166,18 @@ class Agent:
     def _execute(self, action: Action) -> str | None:
         s = self.state
         if action.name == "search":
-            s.record_search(self.tools.call("list_slots", action.args))
+            slots = self.tools.call("list_slots", action.args)
+            fitting = [x for x in slots if _fits(x, action.args)]
+            if slots and not fitting:
+                raise ToolFailed("list_slots", "mismatch")
+            s.record_search(fitting)
         elif action.name == "hold":
             slot = next(x for x in s.offered if x["slot_id"] == action.args["slot_id"])
             try:
-                s.record_hold(self.tools.call("hold_slot", action.args), slot)
+                hold = self.tools.call("hold_slot", action.args)
+                if hold.get("slot_id") != slot["slot_id"]:
+                    raise ToolFailed("hold_slot", "mismatch")
+                s.record_hold(hold, slot)
             except SlotUnavailable:
                 s.offered = [x for x in s.offered if x["slot_id"] != slot["slot_id"]]
                 s.rejected_slot_ids.add(slot["slot_id"])
@@ -172,6 +189,8 @@ class Agent:
             except HoldExpired:
                 s.record_release()
                 return "taken"
+            if booking.get("slot_id") != s.held_slot["slot_id"]:
+                raise ToolFailed("confirm_booking", "mismatch")
             s.record_booking(booking, s.held_slot)
         elif action.name == "release":
             try:
@@ -183,3 +202,18 @@ class Agent:
             self.tools.call("cancel_booking", action.args)
             s.record_cancel()
         return None
+
+
+def _fits(slot: dict, query: dict) -> bool:
+    """A slot the API returned for this query must match it. One that does not is never read out."""
+    if "area" in query and slot["area"].lower() != query["area"].lower():
+        return False
+    if "bedrooms" in query and slot["bedrooms"] != query["bedrooms"]:
+        return False
+    if "date" in query and slot["starts_at"][:10] != query["date"]:
+        return False
+    if "max_rent" in query and slot["annual_rent_aed"] > query["max_rent"]:
+        return False
+    if "start" in query and not (query["start"] <= slot["starts_at"][11:16] < query["end"]):
+        return False
+    return True

@@ -100,6 +100,8 @@ class DialogueState:
 def decide(s: DialogueState) -> Action:
     if s.intent == "goodbye":
         return Action("goodbye")
+    if s.tool_error:
+        return Action("unavailable", {"reason": s.tool_error, "phone": s.slots.get("phone")})
 
     if s.booking:
         if s.cancelled:
