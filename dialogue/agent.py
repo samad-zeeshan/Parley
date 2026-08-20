@@ -72,6 +72,7 @@ class TurnResult:
     timings: dict = field(default_factory=dict)
     action_args: dict = field(default_factory=dict)     # scalar arguments only: slot, next, reason, note
     rejected_text: str | None = None
+    draft: str | None = None
 
 
 class Agent:
@@ -160,7 +161,7 @@ class Agent:
             source=rendered.source, rejected=rendered.rejected, ungrounded=final_violations, tools=called,
             timings={"normalize": t1 - t0, "nlu": t2 - t1, "policy_tools": t3 - t2, "phrasing": t4 - t3},
             action_args={k: v for k, v in action.args.items() if isinstance(v, (str, int))},
-            rejected_text=rendered.rejected_text,
+            rejected_text=rendered.rejected_text, draft=rendered.draft,
         )
 
     def _execute(self, action: Action) -> str | None:

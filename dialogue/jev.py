@@ -328,4 +328,5 @@ class JevPhraser:
         if v.grounded:
             return out
         return Rendered(template(action, lang), lang, "template",
-                        v.violations or [Violation("judge", round(v.probability, 3))], rejected_text=out.text)
+                        v.violations or [Violation("judge", round(v.probability, 3))], rejected_text=out.text,
+                        draft=out.draft)

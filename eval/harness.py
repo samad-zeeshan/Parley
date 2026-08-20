@@ -163,8 +163,8 @@ def cache_source(cache: ASRCache):
 def next_line(call: dict, action: str, args: dict, last: int, played: list[int]) -> int | None:
     """The caller answers the question the agent asked with the line that carries the answer."""
     turns = call["turns"]
-    if action in ("confirmed", "goodbye", "cancelled"):
-        return None
+    if action in ("confirmed", "goodbye", "cancelled", "unavailable"):
+        return None  # after "unavailable" the caller has been promised a callback and hangs up
     if action == "listen":
         return last  # told to go on after saying everything, a caller says it again
     nxt = last + 1
@@ -307,7 +307,7 @@ def new_world():
 
 
 def run_call(call_id: str, call: dict, source, dialogue: str = "rules", tts=None, split: bool = False,
-             service=None, keep_audio: bool = False, llm_model: str = "qwen/qwen3.5-9b") -> dict:
+             service=None, keep_audio: bool = False, llm_model: str = "qwen/qwen3.5-9b", observe=None) -> dict:
     conn, clock, svc = new_world()
     if service is not None:
         svc = service(svc)
@@ -346,12 +346,14 @@ def run_call(call_id: str, call: dict, source, dialogue: str = "rules", tts=None
                 "dialect_pred": t.dialect, "action": t.action, "action_args": t.action_args, "reply": t.text,
                 "reply_lang": t.lang, "expected_lang": expected,
                 "adherent": t.lang == expected and script_ok(t.text, t.lang),
-                "reply_source": t.source, "rejected": [v.kind for v in t.rejected], "rejected_text": t.rejected_text,
+                "reply_source": t.source, "rejected": [v.kind for v in t.rejected], "rejected_text": t.rejected_text, "draft": t.draft,
                 "ungrounded": [v.kind for v in t.ungrounded], "nlu_source": t.nlu.source,
                 "dropped_slots": list(t.nlu.dropped), "decodes": a.get("decodes", []),
                 "timings": {k2: round(v, 4) for k2, v in reply.timings.items()},
                 "reply_seconds": round(reply.speech.seconds, 2) if reply.speech is not None else None,
             })
+            if observe is not None:
+                turns_out[-1].update(observe(agent, t))
             if keep_audio and reply.speech is not None:
                 turns_out[-1]["_speech"] = reply.speech.pcm
         line = next_line(call, t.action, t.action_args, line, played)
@@ -362,5 +364,6 @@ def run_call(call_id: str, call: dict, source, dialogue: str = "rules", tts=None
             "bookings": booking, "audit_ok": verify_chain(conn), "audit_entries": len(entries(conn)),
             "turns": turns_out, "events": events, "wrong_actions": wrong_actions(call, events),
             "spoken_ungrounded": sum(bool(t["ungrounded"]) for t in turns_out),
+            "callbacks": sum(e["action"] == "callback_requested" for e in entries(conn)),
             "judge_verdicts": [{"grounded": v.grounded, "source": v.source, "p": round(v.probability, 4),
                                 "overruled": v.overruled} for v in getattr(phraser, "verdicts", [])]}
