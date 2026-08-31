@@ -271,8 +271,8 @@ def make_dialogue(config: str, clock, llm_model: str = "qwen/qwen3.5-9b"):
     from dialogue.nlu import LLMNLU
     from dialogue.phrasing import LLMPhraser
 
-    if config in ("rules", "rules-nocarry"):
-        nlu = RuleNLU()
+    if config in ("rules", "rules-nocarry", "rules-fuzzy"):
+        nlu = RuleNLU(fuzzy=config == "rules-fuzzy")
     elif config.startswith("jev"):
         from dialogue.jev import JevNLU
 

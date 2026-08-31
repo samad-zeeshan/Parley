@@ -24,6 +24,7 @@ CONDITIONS = ["reference", "asr:local", "asr:hosted", "noise@0.05", "noise@0.1",
 PLAN = {
     "rules": CONDITIONS,
     "rules-nocarry": CONDITIONS,   # v1 behaviour: every message parsed on its own
+    "rules-fuzzy": CONDITIONS,
     "jev": CONDITIONS,
     "llm": CONDITIONS,
     "llm+phrasing": ["reference", "asr:local", "asr:hosted"],

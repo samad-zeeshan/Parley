@@ -66,13 +66,39 @@ OUT_OF_SCOPE = set(_n(["weather", "temperature", "news", "football", "joke", "re
                        "اخبار", "نكته", "مباراه"]))
 
 
+def _is_arabic(w: str) -> bool:
+    return any("؀" <= c <= "ۿ" for c in w)
+
+
 def _has(words: list[str], text: str, lexicon: set[str]) -> bool:
     joined = f" {text} "
     return any(w in lexicon for w in words) or any(" " in p and f" {p} " in joined for p in lexicon)
 
 
+def edit_distance(a: str, b: str) -> int:
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return prev[-1]
+
+
+def _near(token: str, target: str) -> bool:
+    """Close enough to be the same domain word misspelt by ASR: one edit, two for long words."""
+    if len(target) < 5 or abs(len(token) - len(target)) > 2:
+        return False
+    return edit_distance(token, target) <= (1 if max(len(token), len(target)) < 7 else 2)
+
+
 class RuleNLU:
     name = "rules"
+
+    def __init__(self, fuzzy: bool = False):
+        # Whisper small misspells short Arabic answers by a letter or two ("أورفتين" for "غرفتين"). With
+        # fuzzy on, area names, ordinals and the bedroom dual also match within a small edit distance.
+        self.fuzzy = fuzzy
 
     def parse(self, text: str, today: date, norm: Normalized | None = None) -> NLUResult:
         norm = norm or normalize(text, today)
@@ -84,8 +110,14 @@ class RuleNLU:
             if f" {key} " in f" {joined} ":
                 slots["area"] = AREA_ALIASES[key]
                 break
+        if self.fuzzy and "area" not in slots:
+            area = self._fuzzy_area(words)
+            if area:
+                slots["area"] = area
 
         beds = self._bedrooms(words, norm)
+        if beds is None and self.fuzzy and any(_near(w, d) for w in words for d in _ROOM_DUAL):
+            beds = 2
         if beds is not None:
             slots["bedrooms"] = beds
 
@@ -104,6 +136,8 @@ class RuleNLU:
                 slots["budget"] = e.value
 
         choice = self._choice(words)
+        if choice is None and self.fuzzy:
+            choice = self._fuzzy_choice(words)
         if _has(words, joined, CANCEL):
             intent = "cancel_booking"
         elif _has(words, joined, GOODBYE):
@@ -127,6 +161,29 @@ class RuleNLU:
         else:
             intent = "unclear"
         return NLUResult(intent=intent, slots=slots, choice=choice, source=self.name)
+
+    @staticmethod
+    def _fuzzy_area(words: list[str]) -> str | None:
+        for n in (3, 2, 1):
+            for i in range(len(words) - n + 1):
+                gram = " ".join(words[i:i + n])
+                for alias in _AREA_KEYS:
+                    if len(alias.split()) == n and _near(gram, alias):
+                        return AREA_ALIASES[alias]
+        return None
+
+    @staticmethod
+    def _fuzzy_choice(words: list[str]) -> int | None:
+        """Ordinals with or without the article: ثاني is as common as الثاني in Gulf speech."""
+        for w in words:
+            bare = w[2:] if w.startswith("ال") else w
+            for word, n in _ORDINALS.items():
+                if n <= 0 or not _is_arabic(word):
+                    continue
+                target = word[2:] if word.startswith("ال") else word
+                if len(bare) >= 3 and (bare == target or (len(target) >= 5 and _near(bare, target))):
+                    return n
+        return None
 
     @staticmethod
     def _bedrooms(words: list[str], norm: Normalized) -> int | None:

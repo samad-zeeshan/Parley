@@ -141,3 +141,26 @@ def test_model_choice_falls_back_to_the_rule_reading():
 ])
 def test_one_bedroom_in_both_languages(text, beds):
     assert nlu.parse(text, TODAY).slots.get("bedrooms") == beds
+
+
+fuzzy = RuleNLU(fuzzy=True)
+
+
+@pytest.mark.parametrize("text,slots,choice", [
+    ("أبي أحجز في البرشة", {"area": "Al Barsha"}, None),          # one letter off after ASR
+    ("أورفتين", {"bedrooms": 2}, None),
+    ("أختار ثاني", {}, 2),                                         # ordinal without the article
+    ("مدينة خليفه", {"area": "Khalifa City"}, None),
+])
+def test_fuzzy_parser_forgives_small_asr_misspellings(text, slots, choice):
+    out = fuzzy.parse(text, TODAY)
+    assert out.slots == slots and out.choice == choice
+
+
+@pytest.mark.parametrize("text", ["شكرا", "مرحبا", "أبي أحجز", "hello there", "the weather"])
+def test_fuzzy_parser_does_not_invent_slots_from_common_words(text):
+    assert fuzzy.parse(text, TODAY).slots == {}
+
+
+def test_exact_parser_is_unchanged_by_default():
+    assert RuleNLU().parse("أبي أحجز في البرشة", TODAY).slots == {}

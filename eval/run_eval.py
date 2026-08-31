@@ -164,6 +164,7 @@ def _strip(calls: list[dict]) -> list[dict]:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--speech", default=",".join(LOCAL))
+    ap.add_argument("--dialogue", default="rules")
     args = ap.parse_args()
     from speech.tts import PiperTTS
 
@@ -172,28 +173,30 @@ def main() -> None:
     tts.synthesize("تجربة", "ar")
     path = ROOT / "transcripts.json"
     old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-    transcripts = old if old.get("calls") and set(old["calls"]) <= set(CONFIGS) else {"calls": {}}
+    transcripts = old if isinstance(old.get("calls"), dict) and "rules" not in old["calls"] else {"calls": {}}
 
     for cfg in args.speech.split(","):
+        key = cfg if args.dialogue == "rules" else f"{cfg}|{args.dialogue}"
         t0 = time.time()
         print(f"{cfg}: ASR over every scripted line", flush=True)
         cache = ASRCache(cfg)
         part = aggregate_asr(cache)
         cache.save()
         print(f"{cfg}: forty calls", flush=True)
-        calls = [run_call(cid, call, cache.get, "rules", tts, keep_audio=cfg == "local") for cid, call in CALLS.items()]
+        calls = [run_call(cid, call, cache.get, args.dialogue, tts, keep_audio=key == "local")
+                 for cid, call in CALLS.items()]
         cache.save()
         part["dialogue"] = aggregate_calls(calls)
         part["description"] = CONFIGS[cfg].description
         part["runtime_s"] = round(time.time() - t0, 1)
-        update_results("speech", {cfg: part}, merge=True)
-        print(f"{cfg}: completed {part['dialogue']['completed']}/40, en-span WER "
+        update_results("speech", {key: part}, merge=True)
+        print(f"{key}: completed {part['dialogue']['completed']}/40, en-span WER "
               f"{part['codeswitch']['en_span_wer']}, {part['runtime_s']} s", flush=True)
-        if cfg == "local":
+        if key == "local":
             trials = barge_in_trials(calls)
             update_results("barge_in_by_dialect", aggregate_barge_in(trials))
             transcripts["barge_in_trials"] = trials
-        transcripts["calls"][cfg] = _strip(calls)
+        transcripts["calls"][key] = _strip(calls)
         path.write_text(json.dumps(transcripts, ensure_ascii=False, indent=0), encoding="utf-8")
 
     update_results("machine", machine())
