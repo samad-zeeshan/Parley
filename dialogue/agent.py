@@ -1,10 +1,6 @@
-"""One call session: transcript in, reply out.
+"""One call session: a transcript in, a spoken reply out.
 
-    transcript -> language/dialect ID -> normalizer -> NLU (schema-checked)
-      -> policy -> validated tool calls -> policy ... -> phrasing (grounding-checked)
-
-The agent holds no facts of its own. Slots it offers come from list_slots in
-this session; holds and bookings come from the API's answers.
+The agent holds no facts of its own. Slots it offers come from list_slots in this session.
 """
 
 from __future__ import annotations

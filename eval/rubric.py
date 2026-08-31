@@ -1,7 +1,6 @@
 """Gulf Arabic replies scored with a rubric adapted from arXiv 2608.29990, by a local judge calibrated on anchors.
 
-    uv run python -m eval.rubric        # needs LM Studio with qwen/qwen3.6-35b-a3b loaded
-Anchor labels were written for this project. No native Gulf speaker has checked them or the judge yet.
+Anchor labels were written for this project; no native Gulf speaker has checked them or the judge yet.
 """
 
 from __future__ import annotations
@@ -13,7 +12,7 @@ import random
 from .harness import ANCHOR, OUT, ROOT, new_world, update_results
 
 # Positive criteria, atomic and applied to every reply. The paper derives them per prompt from an expert
-# ground truth; here the template draft is the ground truth for facts and the criteria are fixed.
+# ground truth. Here the template draft is the ground truth for facts and the criteria are fixed.
 CRITERIA = {
     "gulf_register": "Where Gulf and Modern Standard Arabic differ, the reply uses the Gulf form.",
     "courtesy": "The reply is polite in the way a Gulf service call is: warm, not curt, not stiff.",

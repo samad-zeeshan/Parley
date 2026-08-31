@@ -1,7 +1,6 @@
 """The dialogue layer scored the MTVA way (arXiv 2609.20152): the same forty calls on reference, ASR and corrupted transcripts.
 
-    uv run --extra jev python -m eval.mtva                         # every dialogue model and condition
-    uv run python -m eval.mtva --dialogue rules                    # one model
+    uv run --extra jev python -m eval.mtva
 """
 
 from __future__ import annotations

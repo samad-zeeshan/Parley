@@ -1,14 +1,6 @@
-"""Intent and slot filling into the strict schema in dialogue/schema.py.
+"""Intent and slots into the strict schema in dialogue/schema.py, by rules or by a local model through LM Studio.
 
-Two implementations share one contract:
-
-- RuleNLU: deterministic keyword and entity rules in English, Gulf Arabic and MSA.
-  It runs in the hermetic tests and is the fallback when the model's output fails
-  schema validation or the model is unreachable.
-- LLMNLU: a local GGUF model served by LM Studio's OpenAI-compatible endpoint,
-  asked for JSON under the same schema. Its output is validated before use.
-
-Both read the normalizer's output, so "مية وعشرين ألف" reaches them as 120000.
+Both read the normalizer's output. Model output is validated, and the rule parser is the fallback.
 """
 
 from __future__ import annotations
@@ -212,7 +204,7 @@ class LLMNLU:
             "messages": self._messages(norm, today, context),
             "temperature": 0,
             "max_tokens": 200,
-            # The served models think by default; thinking costs 10 to 50 s per turn on CPU.
+            # The served models think by default, and thinking costs 10 to 50 s per turn on CPU.
             "reasoning_effort": "none",
             "response_format": {"type": "json_schema",
                                 "json_schema": {"name": "nlu", "strict": True, "schema": NLU_SCHEMA}},
@@ -237,7 +229,7 @@ class LLMNLU:
         self.dropped_slots += len(dropped)
         # The model often leaves out a slot the utterance plainly states (in the evaluation it dropped
         # "JVC" and "Dubai Marina"). Slots are therefore the rule parser's reading plus the model's
-        # evidenced values on top; the intent and the option choice are the model's own.
+        # evidenced values on top. The intent and the option choice are the model's own.
         slots = {**rules.slots, **kept}
         choice = data.get("choice")
         if choice is None and data["intent"] == "choose_option":

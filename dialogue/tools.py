@@ -1,13 +1,6 @@
-"""Validated tool calls, after Change-Gate's tool layer.
+"""Validated tool calls, checked against their JSON schema and against what this session has seen.
 
-Every call is checked twice before it reaches the booking API:
-1. its arguments against the tool's JSON schema, and
-2. against what this session has seen: a hold may only target a slot the API
-   offered in this session, and a confirm only a hold this session made.
-
-Accepted and rejected calls both go into the hash-chained audit log, tagged
-with the session id. The booking API writes its own entries for hold, confirm
-and cancel, so a booking leaves a tool_call entry and an API entry.
+Accepted, rejected and failed calls all go into the hash-chained audit log.
 """
 
 from __future__ import annotations

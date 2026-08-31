@@ -105,7 +105,7 @@ def _feasible(rng: random.Random, svc: BookingService, periods: dict) -> dict:
     while True:
         area = rng.choice(areas)
         beds = rng.choice([0, 1, 2, 2, 3])
-        offset = rng.randint(1, 6)  # Friday to Wednesday; Thursday is today and reads ambiguously
+        offset = rng.randint(1, 6)  # Friday to Wednesday. Thursday is today and reads ambiguously
         day = ANCHOR.date() + timedelta(days=offset)
         period = rng.choice(list(periods) + [None])
         window = periods[period] if period else None

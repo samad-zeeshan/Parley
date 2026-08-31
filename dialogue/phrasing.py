@@ -1,10 +1,6 @@
-"""Turn a policy action into words, in English or Arabic.
+"""Turn a policy action into words in English or Arabic.
 
-Templates are the source of truth: each one only inserts values from the API
-result or from what the caller said. An optional local model may reword the
-reply; its text is spoken only if dialogue/grounding.py finds no fact in it
-that the API did not return, and it is in the right script. Otherwise the
-template is spoken and the rejection is counted.
+Templates are the source of truth. A model rewording is spoken only if the grounding and script checks pass.
 """
 
 from __future__ import annotations
@@ -166,7 +162,7 @@ class Phraser:
         payload = json.dumps({"action": action.name, "facts": slots, "draft": base}, ensure_ascii=False)
         try:
             reply = (self.llm.phrase(action, payload, lang) or "").strip()
-        except Exception:  # noqa: BLE001 -- a phrasing failure falls back to the template
+        except Exception:  # noqa: BLE001  (a phrasing failure falls back to the template)
             return Rendered(base, lang, "template")
         bad = ungrounded(reply, facts, self.today())
         if not reply or (lang == "ar") != bool(_ARABIC.search(reply)):

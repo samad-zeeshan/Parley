@@ -1,9 +1,6 @@
-"""Deterministic dialogue policy. Slot state in, next action out.
+"""Deterministic dialogue policy: slot state in, next action out.
 
-The model never chooses what happens next. It only fills slots (NLU) and, at
-most, rewords the reply this policy picked (phrasing). Tool actions (search,
-hold, confirm, release, cancel) are executed by the agent through the validated
-tool layer, and the policy is asked again with the result.
+No model chooses what happens next. Tool actions run through the validated tool layer.
 """
 
 from __future__ import annotations

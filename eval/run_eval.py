@@ -1,7 +1,6 @@
 """Forty scripted callers through each local speech config with the rule parser: ASR, code switching, calls, barge-in.
 
-    uv run --extra speech python -m eval.run_eval                  # every local config
-    uv run --extra speech python -m eval.run_eval --speech local   # one config
+    uv run --extra speech python -m eval.run_eval --speech local
 """
 
 from __future__ import annotations

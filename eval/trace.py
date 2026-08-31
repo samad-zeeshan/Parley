@@ -1,7 +1,6 @@
 """TRACE acoustic stress (arXiv 2609.29452): the forty calls again on stressed copies of the caller audio.
 
-    uv run --extra speech python -m eval.trace          # every arm, local config, rule parser
-Scores task completion, wrong actions, recovery and user effort per language, and writes eval/trace.svg.
+    uv run --extra speech python -m eval.trace      # writes the trace section of eval/results.json and eval/trace.svg
 """
 
 from __future__ import annotations

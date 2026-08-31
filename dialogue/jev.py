@@ -1,17 +1,6 @@
-"""Decision heads read from one forward pass (the Jev readout).
+"""Decision heads read from one forward pass: a softmax over one-token option labels, then accept or escalate.
 
-After Open-Jev / JevLite (arXiv 2609.23959) and JEV-as-a-Judge (arXiv 2609.26550),
-implemented here from the papers' description; no code was published with them.
-
-A head declares its options, tags each with a one-token label (A, B, C, ...),
-and asks one question. One forward pass of a small causal LM gives the logits
-at the last position; the softmax over just the label tokens, divided by a
-fitted temperature, is one probability per option. No text is generated.
-
-A cascade accepts a decision whose top probability reaches the threshold and
-escalates the rest: intent and yes/no go to the rule parser, the judge goes to
-the deterministic grounding check. Slots are never read from Jev; they stay
-with the rule parser. See docs/adr/0004-jev-decision-heads.md.
+Built from the descriptions in arXiv 2609.23959 and 2609.26550; no code was published with them.
 """
 
 from __future__ import annotations

@@ -11,7 +11,7 @@ from .audio import SAMPLE_RATE
 
 FRAME_MS = 20
 FRAME = SAMPLE_RATE * FRAME_MS // 1000  # 320 samples
-DEFAULT_COUPLING = 0.3   # assumed speaker-to-mic gain (about -10 dB); calibrate per device
+DEFAULT_COUPLING = 0.3   # assumed speaker-to-mic gain, about -10 dB. Calibrate per device
 ECHO_MARGIN_DB = 6.0
 
 

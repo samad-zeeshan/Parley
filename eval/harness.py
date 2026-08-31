@@ -136,7 +136,7 @@ RESULTS = ROOT / "results.json"
 
 def load_results() -> dict:
     r = json.loads(RESULTS.read_text(encoding="utf-8")) if RESULTS.exists() else {}
-    return {} if "configs" in r else r  # a v1 file is replaced, not merged; v1 numbers live in results_v1.json
+    return {} if "configs" in r else r  # a v1 file is replaced, not merged. v1 numbers live in results_v1.json
 
 
 def update_results(section: str, data, merge: bool = False) -> None:

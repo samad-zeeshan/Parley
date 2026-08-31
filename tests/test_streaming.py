@@ -1,7 +1,6 @@
-"""Streaming front end: VAD endpointing, the streaming recognizer, and the voice call loop.
+"""Streaming front end: VAD endpointing, the streaming recognizer, early final decode and the voice call loop.
 
-Audio here is synthetic (noise bursts stand in for speech) and the ASR and TTS
-are fakes, so the suite needs no model and no sound card.
+Audio is synthetic noise bursts and the models are fakes, so no model or sound card is needed.
 """
 
 import numpy as np
