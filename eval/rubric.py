@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import time
 
 from .harness import ANCHOR, OUT, ROOT, new_world, update_results
 
@@ -102,7 +103,12 @@ class LMStudioJudge:
                              {"role": "user", "content": f"DRAFT: {draft}\nREPLY: {reply}"}],
                 "response_format": {"type": "json_schema",
                                     "json_schema": {"name": "rubric", "strict": True, "schema": judge_schema()}}}
-        r = httpx.post(f"{self.url}/chat/completions", json=body, timeout=300)
+        # LM Studio answers 400 while it swaps one loaded model for another, so a failed call is retried.
+        for attempt in range(4):
+            r = httpx.post(f"{self.url}/chat/completions", json=body, timeout=300)
+            if r.status_code == 200 or attempt == 3:
+                break
+            time.sleep(15)
         r.raise_for_status()
         return json.loads(r.json()["choices"][0]["message"]["content"])
 

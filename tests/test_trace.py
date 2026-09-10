@@ -43,3 +43,4 @@ def test_plot_is_one_svg_with_a_panel_per_language():
     svg = plot_svg(rows)
     assert svg.startswith("<svg") and svg.count("<g class=\"panel\"") == 4
     assert "white@5" in svg and "Gulf Arabic" in svg
+    assert "local-v1 speech config" in plot_svg(rows, "local-v1")

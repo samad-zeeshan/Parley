@@ -26,6 +26,8 @@ CONFIGS = {c.name: c for c in [
     SpeechConfig("local", "faster-whisper small, mixed-language prompt, Piper", "small"),
     SpeechConfig("local-v1", "faster-whisper small, v1 domain prompt, Piper", "small", DOMAIN_PROMPT),
     SpeechConfig("local-2pass", "faster-whisper small, mixed prompt, decode split at pauses", "small", segmented=True),
+    SpeechConfig("local-2pass-v1", "faster-whisper small, v1 prompt, decode split at pauses", "small", DOMAIN_PROMPT,
+                 segmented=True),
     SpeechConfig("local-base", "faster-whisper base, mixed-language prompt, Piper", "base"),
     SpeechConfig("local-tiny", "faster-whisper tiny, mixed-language prompt, Piper", "tiny"),
     # Listed so every results table carries its column. No hosted client is in this build and no

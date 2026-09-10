@@ -59,89 +59,67 @@ Read these limits before the numbers:
 - Latency was measured on the machine named in `eval/results.json`, with no GPU.
 
 <!-- results:begin -->
-ASR (faster-whisper small, CPU) and dialect ID, per scripted line:
+Calls booked by the scripted callers, rule parser:
 
-| language / dialect | lines | WER | WER after number normalization | digit WER | date WER | time WER | dialect ID on ASR text | dialect ID on reference text |
-|---|---|---|---|---|---|---|---|---|
-| English | 12 | 0.367 | 0.011 | 0.000 (33) | 0.000 (2) | 0.000 (4) | 1.000 | 1.000 |
-| Gulf Arabic | 12 | 0.389 | 0.433 | 0.484 (31) | 0.500 (2) | 0.500 (4) | 0.583 | 0.750 |
-| MSA | 11 | 0.197 | 0.123 | 0.136 (22) | 0.000 (2) | 0.000 (3) | 1.000 | 1.000 |
-| Code-switched | 9 | 0.579 | 0.697 | 1.000 (3) | 1.000 (2) | 0.500 (4) | 0.111 | 0.889 |
-
-The count in brackets is the number of reference tokens the digit, date or time WER is over.
-
-Dialogue, config `rules` (deterministic rule parser):
-
-| language / dialect | turns | intent accuracy | slot F1 | intent accuracy, reference text | slot F1, reference text | turn latency p50 (s) | turn latency p95 (s) | ASR p50 (s) | dialogue p50 (s) | TTS p50 (s) | Jev ECE | Jev accepted share |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| English | 10 | 1.000 | 1.000 | 1.000 | 1.000 | 2.48 | 3.32 | 2.09 | 0.001 | 0.34 | n/a | n/a |
-| Gulf Arabic | 14 | 0.714 | 0.828 | 1.000 | 1.000 | 2.59 | 7.42 | 2.10 | 0.001 | 0.18 | n/a | n/a |
-| MSA | 21 | 0.476 | 0.788 | 1.000 | 1.000 | 2.62 | 3.27 | 2.34 | 0.001 | 0.19 | n/a | n/a |
-| Code-switched | 24 | 0.667 | 0.484 | 1.000 | 1.000 | 2.20 | 4.36 | 2.09 | 0.000 | 0.08 | n/a | n/a |
-
-Task completion (booking in the database with the caller's phone and a valid audit chain): English 2/2, Gulf Arabic 2/2, MSA 1/2, Code-switched 0/2. All turns: p50 2.38 s, p95 4.17 s (above the 1.5 s target). Replies spoken with an ungrounded fact: 0. Model slots dropped for lack of evidence: 0. NLU fallbacks to rules: 0. Model replies spoken: 0; rejected by the grounding check: 0.
-
-Dialogue, config `llm` (qwen/qwen3.5-9b via LM Studio (GGUF), reasoning off, evidence check on slots):
-
-| language / dialect | turns | intent accuracy | slot F1 | intent accuracy, reference text | slot F1, reference text | turn latency p50 (s) | turn latency p95 (s) | ASR p50 (s) | dialogue p50 (s) | TTS p50 (s) | Jev ECE | Jev accepted share |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| English | 10 | 0.900 | 1.000 | 0.900 | 1.000 | 4.99 | 5.94 | 2.09 | 2.231 | 0.36 | n/a | n/a |
-| Gulf Arabic | 15 | 0.600 | 0.828 | 0.867 | 0.970 | 4.94 | 8.88 | 2.12 | 1.981 | 0.17 | n/a | n/a |
-| MSA | 19 | 0.421 | 0.788 | 0.895 | 1.000 | 4.25 | 6.11 | 2.47 | 1.326 | 0.21 | n/a | n/a |
-| Code-switched | 24 | 0.583 | 0.484 | 0.750 | 1.000 | 3.63 | 5.60 | 2.09 | 1.272 | 0.10 | n/a | n/a |
-
-Task completion (booking in the database with the caller's phone and a valid audit chain): English 2/2, Gulf Arabic 1/2, MSA 1/2, Code-switched 0/2. All turns: p50 4.16 s, p95 6.05 s (above the 1.5 s target). Replies spoken with an ungrounded fact: 0. Model slots dropped for lack of evidence: 80. NLU fallbacks to rules: 10. Model replies spoken: 0; rejected by the grounding check: 0.
-
-Dialogue, config `llm+phrasing` (llm NLU plus qwen/qwen3.5-9b rewording replies, grounding check):
-
-| language / dialect | turns | intent accuracy | slot F1 | intent accuracy, reference text | slot F1, reference text | turn latency p50 (s) | turn latency p95 (s) | ASR p50 (s) | dialogue p50 (s) | TTS p50 (s) | Jev ECE | Jev accepted share |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| English | 10 | 0.900 | 1.000 | 0.900 | 1.000 | 6.08 | 8.99 | 2.09 | 3.518 | 0.26 | n/a | n/a |
-| Gulf Arabic | 15 | 0.600 | 0.828 | 0.867 | 0.970 | 6.03 | 10.73 | 2.12 | 2.708 | 0.26 | n/a | n/a |
-| MSA | 19 | 0.421 | 0.788 | 0.895 | 1.000 | 5.25 | 7.94 | 2.47 | 2.633 | 0.21 | n/a | n/a |
-| Code-switched | 24 | 0.583 | 0.484 | 0.750 | 1.000 | 4.10 | 6.32 | 2.09 | 1.704 | 0.12 | n/a | n/a |
-
-Task completion (booking in the database with the caller's phone and a valid audit chain): English 2/2, Gulf Arabic 1/2, MSA 1/2, Code-switched 0/2. All turns: p50 5.19 s, p95 8.35 s (above the 1.5 s target). Replies spoken with an ungrounded fact: 0. Model slots dropped for lack of evidence: 85. NLU fallbacks to rules: 10. Model replies spoken: 60; rejected by the grounding check: 8.
-
-Dialogue, config `jev` (Jev intent and yes/no heads with rule escalation, rule slots, templates):
-
-| language / dialect | turns | intent accuracy | slot F1 | intent accuracy, reference text | slot F1, reference text | turn latency p50 (s) | turn latency p95 (s) | ASR p50 (s) | dialogue p50 (s) | TTS p50 (s) | Jev ECE | Jev accepted share |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| English | 10 | 1.000 | 1.000 | 1.000 | 1.000 | 4.05 | 5.01 | 2.09 | 1.592 | 0.35 | 0.050 | 0.900 |
-| Gulf Arabic | 17 | 0.824 | 0.812 | 0.588 | 1.000 | 3.89 | 7.44 | 2.07 | 1.552 | 0.21 | 0.339 | 0.529 |
-| MSA | 24 | 0.583 | 0.826 | 0.625 | 1.000 | 4.20 | 4.97 | 2.27 | 1.662 | 0.18 | 0.331 | 0.875 |
-| Code-switched | 24 | 0.750 | 0.484 | 0.708 | 1.000 | 3.88 | 6.21 | 2.09 | 1.578 | 0.11 | 0.305 | 0.833 |
-
-Task completion (booking in the database with the caller's phone and a valid audit chain): English 2/2, Gulf Arabic 2/2, MSA 1/2, Code-switched 0/2. All turns: p50 4.04 s, p95 5.80 s (above the 1.5 s target). Replies spoken with an ungrounded fact: 0. Model slots dropped for lack of evidence: 0. NLU fallbacks to rules: 0. Model replies spoken: 0; rejected by the grounding check: 0. Jev ECE over all turns: 0.272.
-
-Dialogue, config `jev+llm` (jev NLU plus qwen/qwen3.5-9b rewording replies, Jev judge then grounding check):
-
-| language / dialect | turns | intent accuracy | slot F1 | intent accuracy, reference text | slot F1, reference text | turn latency p50 (s) | turn latency p95 (s) | ASR p50 (s) | dialogue p50 (s) | TTS p50 (s) | Jev ECE | Jev accepted share |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| English | 10 | 1.000 | 1.000 | 1.000 | 1.000 | 6.70 | 11.10 | 2.09 | 4.394 | 0.29 | 0.050 | 0.900 |
-| Gulf Arabic | 17 | 0.824 | 0.812 | 0.588 | 1.000 | 6.04 | 12.13 | 2.07 | 3.644 | 0.18 | 0.339 | 0.529 |
-| MSA | 24 | 0.583 | 0.826 | 0.625 | 1.000 | 6.04 | 8.99 | 2.27 | 3.637 | 0.18 | 0.331 | 0.875 |
-| Code-switched | 24 | 0.750 | 0.484 | 0.708 | 1.000 | 5.34 | 7.45 | 2.09 | 2.910 | 0.11 | 0.305 | 0.833 |
-
-Task completion (booking in the database with the caller's phone and a valid audit chain): English 2/2, Gulf Arabic 2/2, MSA 1/2, Code-switched 0/2. All turns: p50 5.98 s, p95 10.10 s (above the 1.5 s target). Replies spoken with an ungrounded fact: 0. Model slots dropped for lack of evidence: 0. NLU fallbacks to rules: 0. Model replies spoken: 18; rejected by the grounding check: 57. Jev ECE over all turns: 0.272. Judge: 66 replies judged, 51 decided by Jev, 15 escalated to the check, 0 Jev 'grounded' verdicts overruled by the check, 48 rejected.
-
-Jev dialect head (Qwen/Qwen3-1.7B, one forward pass per line):
-
-| language / dialect | lines | accuracy, reference text | ECE, reference text | accuracy, ASR text | ECE, ASR text |
-|---|---|---|---|---|---|
-| English | 12 | 0.083 | 0.330 | 0.083 | 0.314 |
-| Gulf Arabic | 12 | 0.833 | 0.478 | 1.000 | 0.515 |
-| MSA | 11 | 0.000 | 0.494 | 0.000 | 0.490 |
-| Code-switched | 9 | 0.111 | 0.434 | 0.222 | 0.240 |
-
-Barge-in (caller line played over the agent's real Piper reply, agent echo in the mic at 0.25 gain, success means stopped within 0.2 s of the caller's first voiced frame):
-
-| interrupting caller | trials | success | success rate | latency p50 (s) | latency max (s) | false stops on echo alone |
+| calls booked | v1 (8 calls) | local | local, fuzzy parser | mixed prompt | two-pass decode | hosted |
 |---|---|---|---|---|---|---|
-| English | 6 | 5 | 0.833 | 0.120 | 0.220 | 0 |
-| Gulf Arabic | 11 | 10 | 0.909 | 0.120 | 0.320 | 0 |
-| MSA | 18 | 17 | 0.944 | 0.120 | 0.220 | 0 |
-| Code-switched | 22 | 22 | 1.000 | 0.100 | 0.160 | 0 |
+| English | 2/2 | 6/10 | 8/10 | 7/10 | 7/10 | not run |
+| Gulf Arabic | 2/2 | 8/10 | 8/10 | 4/10 | 3/10 | not run |
+| MSA | 1/2 | 3/10 | 4/10 | 1/10 | 1/10 | not run |
+| Code-switched | 0/2 | 0/10 | 0/10 | 0/10 | 1/10 | not run |
+| All | 5/8 | 17/40 | 20/40 | 12/40 | 12/40 | not run |
+| Wrong actions | n/a | 5 | 6 | 5 | 3 | not run |
+| Replies with an ungrounded fact | 0 | 0 | 0 | 0 | 0 | not run |
+
+Code-switched lines scored per language as in arXiv 2605.19069. WER on the English words: local 0.500, mixed prompt 0.237, two-pass decode 0.108, hosted not run. WER on the Arabic words: local 0.695, mixed prompt 0.808, two-pass decode 0.350, hosted not run. English words kept in Latin script: local 0.552, mixed prompt 0.861, two-pass decode 0.990, hosted not run.
+
+The dialogue layer alone on the same calls, MTVA style (arXiv 2609.20152):
+
+| transcript | transcript WER | rules intent | rules slot F1 | rules booked | rules, no carry-over booked | Jev intent | Jev booked | 9B intent | 9B booked | reply language kept |
+|---|---|---|---|---|---|---|---|---|---|---|
+| reference text | 0.000 | 0.895 | 0.977 | 38/40 | 38/40 | not run | not run | 0.794 | 36/40 | 1.000 |
+| local ASR text | 0.390 | 0.642 | 0.623 | 17/40 | 18/40 | not run | not run | not run | not run | 0.906 |
+| hosted ASR text | not run | not run | not run | not run | not run | not run | not run | not run | not run | not run |
+| 5% injected errors | 0.050 | 0.800 | 0.891 | 34/40 | 35/40 | not run | not run | not run | not run | 0.991 |
+| 10% injected errors | 0.097 | 0.724 | 0.807 | 34/40 | 34/40 | not run | not run | not run | not run | 0.982 |
+| 20% injected errors | 0.202 | 0.534 | 0.620 | 21/40 | 25/40 | not run | not run | not run | not run | 0.980 |
+| 30% injected errors | 0.293 | 0.425 | 0.509 | 9/40 | 9/40 | not run | not run | not run | not run | 0.978 |
+| split turns | 0.000 | 0.867 | 0.859 | 29/40 | 0/40 | not run | not run | not run | not run | 0.945 |
+
+With the 9B model rewording replies: on reference text, 265 model replies spoken, 51 rejected, reply language kept 1.000, 0 replies with an ungrounded fact; on local ASR text, 454 model replies spoken, 70 rejected, reply language kept 0.905, 0 replies with an ungrounded fact.
+
+Acoustic stress on the local config, TRACE style (arXiv 2609.29452), plot in `eval/trace.svg`:
+
+| arm (local) | English | Gulf Arabic | MSA | Code-switched | wrong actions | recovered after trouble | extra turns | hosted |
+|---|---|---|---|---|---|---|---|---|
+| clean | 6/10 | 8/10 | 3/10 | 0/10 | 5 | 14/37 | 0.0 | not run |
+| white@20 | 7/10 | 5/10 | 4/10 | 0/10 | 6 | 13/37 | 1.4 | not run |
+| white@10 | 6/10 | 2/10 | 3/10 | 0/10 | 7 | 7/36 | -2.6 | not run |
+| white@5 | 7/10 | 0/10 | 4/10 | 0/10 | 9 | 8/37 | 0.9 | not run |
+| babble@20 | 6/10 | 6/10 | 6/10 | 0/10 | 4 | 14/36 | 0.1 | not run |
+| babble@10 | 6/10 | 5/10 | 3/10 | 0/10 | 3 | 11/37 | -0.7 | not run |
+| babble@5 | 6/10 | 0/10 | 4/10 | 0/10 | 7 | 7/37 | 0.2 | not run |
+| reverb@0.3 | 7/10 | 6/10 | 1/10 | 0/10 | 11 | 11/37 | -1.6 | not run |
+| reverb@0.8 | 6/10 | 2/10 | 2/10 | 0/10 | 6 | 8/38 | -0.8 | not run |
+| competing | 6/10 | 3/10 | 3/10 | 0/10 | 13 | 10/38 | 0.2 | not run |
+
+Turn latency on the development CPU, all turns, target 1.5 s. Timed from when the caller's 0.5 s pause closes the turn; early decode starts recognition on the pause's first frame:
+
+| speech config | booked | p50 (s) | p95 (s) | p95 without early decode (s) |
+|---|---|---|---|---|
+| v1 (whisper small) | 5/8 | 2.38 | n/a | 4.17 |
+| local (whisper small) | 17/40 | 1.78 | 4.26 | 4.76 |
+| mixed prompt | 12/40 | 1.55 | 3.82 | 4.32 |
+| two-pass decode | 12/40 | 1.82 | 4.74 | 5.24 |
+| whisper base | 7/40 | 0.33 | 1.44 | 1.94 |
+| whisper tiny | 6/40 | 0.16 | 1.22 | 1.68 |
+| hosted | not run | not run | not run | not run |
+
+Booking API faults on reference text (arXiv 2608.02372, 2606.31307), calls booked: clean 38/40, slow 9/40, empty 0/40, contradictory 0/40, contradictory-confirm 38/40, down 0/40, down-at-confirm 0/40. False facts spoken in all modes: 0. Calls that hit a fault and were handled safely: 232/232. Callbacks queued: 78. Hosted: not run.
+
+Gulf dialect rubric (arXiv 2608.29990), calibrated score out of 1: agent templates 0.917 over 19 replies, 9B rewordings 0.679 over 40 (penalties: register flattening 24, wrong dialect 22, hallucination 10, ambiguous framing 3). Judge qwen/qwen3.6-35b-a3b agrees with 13 labelled anchors on 0.815 of criteria; native-speaker spot check not done yet.
+
+Barge-in, agent stopped within 0.2 s of the caller: English 77/82 (v1 5/6), Gulf 117/121 (v1 10/11), MSA 132/139 (v1 17/18), code-switched 136/146 (v1 22/22). Slowest stop 0.40 s; false stops on the agent's own echo: 0.
 <!-- results:end -->
 
 What the numbers say:

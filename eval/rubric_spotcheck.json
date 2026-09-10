@@ -1,0 +1,185 @@
+[
+ {
+  "draft": "أي يوم يناسبك للمعاينة؟",
+  "reply": "ما هو اليوم الذي يناسبك للمعاينة؟",
+  "source": "llm",
+  "judge": {
+   "criteria": {
+    "gulf_register": false,
+    "courtesy": true,
+    "clarity": true,
+    "gulf_lexicon": false,
+    "fidelity": true
+   },
+   "penalties": [
+    "register_flattening",
+    "wrong_dialect"
+   ]
+  },
+  "native_speaker_verdict": null
+ },
+ {
+  "draft": "أقدر أساعدك في حجز معاينة العقارات فقط. أي يوم يناسبك للمعاينة؟",
+  "reply": "يمكنني مساعدتك في حجز موعد لمعاينة العقارات. ما هو اليوم الذي يناسبك؟",
+  "source": "llm",
+  "judge": {
+   "criteria": {
+    "gulf_register": false,
+    "courtesy": true,
+    "clarity": true,
+    "gulf_lexicon": false,
+    "fidelity": true
+   },
+   "penalties": [
+    "register_flattening",
+    "wrong_dialect"
+   ]
+  },
+  "native_speaker_verdict": null
+ },
+ {
+  "draft": "تم الحجز. موعد المعاينة الثلاثاء 6 أكتوبر الساعة 14:00 في شقة 4101، برج ب6، دبي مارينا، دبي. الوكيل راشد. شكرا لك.",
+  "reply": "تم تأكيد حجز المعاينة مع الوكيل راشد يوم الثلاثاء السادس من أكتوبر الساعة الثانية بعد الظهر. ستكون الشقة في برج ب6، دبي مارينا، دبي.",
+  "source": "llm",
+  "judge": {
+   "criteria": {
+    "gulf_register": false,
+    "courtesy": false,
+    "clarity": true,
+    "gulf_lexicon": false,
+    "fidelity": false
+   },
+   "penalties": [
+    "register_flattening",
+    "wrong_dialect",
+    "hallucination"
+   ]
+  },
+  "native_speaker_verdict": null
+ },
+ {
+  "draft": "حجزت لك مبدئيا موعد الأحد 4 أكتوبر الساعة 11:00 في شقة 4311، برج أ3، جزيرة الريم، أبوظبي. أأكد الحجز؟",
+  "reply": "تم حجز موعدك مبدئياً يوم الأحد الرابع من أكتوبر الساعة الحادية عشرة لزيارة الشقة رقم 4311 في برج أ3 بجزيرة الريم. هل تريد تأكيد هذا الحجز؟",
+  "source": "llm",
+  "judge": {
+   "criteria": {
+    "gulf_register": false,
+    "courtesy": true,
+    "clarity": true,
+    "gulf_lexicon": false,
+    "fidelity": true
+   },
+   "penalties": [
+    "register_flattening",
+    "wrong_dialect"
+   ]
+  },
+  "native_speaker_verdict": null
+ },
+ {
+  "draft": "حجزت لك مبدئيا موعد الجمعة 2 أكتوبر الساعة 13:00 في شقة 1902، برج ج1، الخليج التجاري، دبي. أأكد الحجز؟",
+  "reply": "سأحجز لك مبدئياً زيارة يوم الجمعة الثاني من أكتوبر الساعة الواحدة ظهراً في الشقة رقم 1902 ببرج جي1، الخليج التجاري، دبي. هل تود تأكيد هذا الموعد؟",
+  "source": "llm",
+  "judge": {
+   "criteria": {
+    "gulf_register": false,
+    "courtesy": true,
+    "clarity": true,
+    "gulf_lexicon": false,
+    "fidelity": true
+   },
+   "penalties": [
+    "register_flattening",
+    "wrong_dialect"
+   ]
+  },
+  "native_speaker_verdict": null
+ },
+ {
+  "draft": "في أي منطقة تبحث؟",
+  "reply": "ما هي المنطقة التي تبحث عنها؟",
+  "source": "llm",
+  "judge": {
+   "criteria": {
+    "gulf_register": true,
+    "courtesy": true,
+    "clarity": true,
+    "gulf_lexicon": true,
+    "fidelity": true
+   },
+   "penalties": []
+  },
+  "native_speaker_verdict": null
+ },
+ {
+  "draft": "أي يوم يناسبك للمعاينة؟",
+  "reply": "ما هو اليوم المناسب لك للمعاينة؟",
+  "source": "llm",
+  "judge": {
+   "criteria": {
+    "gulf_register": true,
+    "courtesy": true,
+    "clarity": true,
+    "gulf_lexicon": true,
+    "fidelity": true
+   },
+   "penalties": []
+  },
+  "native_speaker_verdict": null
+ },
+ {
+  "draft": "ما رقم جوالك؟",
+  "reply": "ما هو رقم هاتفك؟",
+  "source": "llm",
+  "judge": {
+   "criteria": {
+    "gulf_register": false,
+    "courtesy": false,
+    "clarity": true,
+    "gulf_lexicon": false,
+    "fidelity": true
+   },
+   "penalties": [
+    "register_flattening",
+    "wrong_dialect"
+   ]
+  },
+  "native_speaker_verdict": null
+ },
+ {
+  "draft": "عذرا، ما سمعتك زين. ما رقم جوالك؟",
+  "reply": "عذرًا، لم أسمعك بوضوح. هل يمكنك تكرار رقم هاتفك؟",
+  "source": "llm",
+  "judge": {
+   "criteria": {
+    "gulf_register": false,
+    "courtesy": false,
+    "clarity": true,
+    "gulf_lexicon": false,
+    "fidelity": false
+   },
+   "penalties": [
+    "register_flattening",
+    "wrong_dialect",
+    "hallucination"
+   ]
+  },
+  "native_speaker_verdict": null
+ },
+ {
+  "draft": "تم إلغاء الحجز.",
+  "reply": "تم إلغاء الحجز.",
+  "source": "template",
+  "judge": {
+   "criteria": {
+    "gulf_register": true,
+    "courtesy": true,
+    "clarity": true,
+    "gulf_lexicon": true,
+    "fidelity": true
+   },
+   "penalties": []
+  },
+  "native_speaker_verdict": null
+ }
+]

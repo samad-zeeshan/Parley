@@ -44,7 +44,7 @@ def aggregate_arm(calls: list[dict], clean: list[dict]) -> dict:
     return out
 
 
-def plot_svg(rows: dict) -> str:
+def plot_svg(rows: dict, speech: str = "local") -> str:
     """One panel per language, one bar per arm: the share of calls completed."""
     arms = list(rows)
     bar, gap, label_w, plot_w, pad = 14, 6, 92, 170, 16
@@ -58,7 +58,7 @@ def plot_svg(rows: dict) -> str:
            ".bar{fill:#3987e5}.grid{stroke:#3a3936}}</style>",
            f'<rect class="bg" width="{width}" height="{height}"/>',
            f'<text class="ink" x="{pad}" y="{pad + 8}" font-size="13" font-weight="600">Calls completed under '
-           f'acoustic stress, local speech config</text>']
+           f'acoustic stress, {speech} speech config</text>']
     for i, kind in enumerate(NAMES):
         x0 = pad + (i % 2) * (panel_w + pad)
         y0 = 24 + pad + (i // 2) * (panel_h + pad)
@@ -104,7 +104,7 @@ def main() -> None:
         total = sum(r["completed"] for r in done[arm].values())
         print(f"{arm}: completed {total}/40, wrong actions "
               f"{sum(r['wrong_actions'] for r in done[arm].values())} ({time.time() - t0:.0f} s)", flush=True)
-    (ROOT / "trace.svg").write_text(plot_svg({a: done[a] for a in ARMS if a in done}), encoding="utf-8",
+    (ROOT / "trace.svg").write_text(plot_svg({a: done[a] for a in ARMS if a in done}, args.speech), encoding="utf-8",
                                     newline="\n")
 
 
