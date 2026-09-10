@@ -19,14 +19,18 @@ from .scoring import f1, slot_counts
 from .scripts import CALLS
 from .wer import ZERO, count_errors
 
+# The local config that books the most calls on clean audio, so the one a customer would run.
+LOCAL = "local-v1"
 CONDITIONS = ["reference", "asr:local", "asr:hosted", "noise@0.05", "noise@0.1", "noise@0.2", "noise@0.3", "split"]
-# The 9B model with rewording costs two model calls a turn, so it runs on the two conditions that matter most.
+# Model calls cost seconds each on this CPU, so the model rows skip two of the error rates. The rule rows
+# carry the full curve. Rewording costs two model calls a turn and runs on the two clean-text conditions.
+MODEL_CONDITIONS = ["reference", "asr:local", "asr:hosted", "noise@0.1", "noise@0.3", "split"]
 PLAN = {
     "rules": CONDITIONS,
     "rules-nocarry": CONDITIONS,   # v1 behaviour: every message parsed on its own
     "rules-fuzzy": CONDITIONS,
-    "jev": CONDITIONS,
-    "llm": CONDITIONS,
+    "jev": MODEL_CONDITIONS,
+    "llm": MODEL_CONDITIONS,
     "llm+phrasing": ["reference", "asr:local", "asr:hosted"],
 }
 
@@ -91,7 +95,7 @@ def source_for(condition: str):
     if condition in ("reference", "split"):
         return reference_source
     if condition == "asr:local":
-        return ASRCache("local").get
+        return ASRCache(LOCAL).get
     rate = float(condition.split("@")[1])
 
     def noisy(call_id, line, attempt, hint):
@@ -170,7 +174,8 @@ def main() -> None:
             if key in done and not args.force:
                 continue
             if cond == "asr:hosted":
-                update_results("mtva", {"runs": {**done, key: {"not_run": True}}}, merge=True)
+                runs = {**load_results().get("mtva", {}).get("runs", {}), key: {"not_run": True}}
+                update_results("mtva", {"runs": runs}, merge=True)
                 done[key] = {"not_run": True}
                 continue
             t0 = time.time()
@@ -178,11 +183,13 @@ def main() -> None:
             calls = [run_call(cid, call, src, dialogue, split=cond == "split", llm_model=args.llm)
                      for cid, call in CALLS.items()]
             if cond == "asr:local":
-                ASRCache("local").save()
+                ASRCache(LOCAL).save()
             agg = aggregate(calls)
             agg["runtime_s"] = round(time.time() - t0, 1)
             done[key] = agg
-            update_results("mtva", {"runs": done, "conditions": CONDITIONS, "reference_day": ANCHOR.isoformat()},
+            # Other harness runs may have written since this one started, so merge per key, not wholesale.
+            runs = {**load_results().get("mtva", {}).get("runs", {}), key: agg}
+            update_results("mtva", {"runs": runs, "conditions": CONDITIONS, "reference_day": ANCHOR.isoformat()},
                            merge=True)
             (OUT / "mtva").mkdir(parents=True, exist_ok=True)
             (OUT / "mtva" / f"{dialogue}_{cond.replace(':', '-').replace('@', '-')}.json").write_text(
