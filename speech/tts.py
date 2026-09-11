@@ -1,13 +1,6 @@
-"""Offline text to speech.
+"""Offline text to speech: Piper for the agent in both languages, Windows SAPI as a second English caller voice.
 
-Two engines were found to work on the reference machine without a GPU or a
-network call after download (see docs/adr/0001-model-choices.md):
-
-- Piper (onnx, CPU): en_US-lessac-medium for English, ar_JO-kareem-medium for
-  Arabic. The only open Arabic Piper voice is a Jordanian speaker, so "Gulf"
-  audio made with it is Gulf wording in a Levantine voice.
-- Windows SAPI (System.Speech): English only on this machine (David, Zira).
-  Used as a second English voice for evaluation variety.
+The only open Arabic Piper voice is Jordanian, so Gulf audio made with it is Gulf wording in a Levantine voice.
 """
 
 from __future__ import annotations

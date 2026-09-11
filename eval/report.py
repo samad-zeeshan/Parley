@@ -96,10 +96,10 @@ def phrasing_line(r: dict) -> str:
     for c, label in [("reference", "reference text"), ("asr:local", "local ASR text")]:
         x = runs.get(f"llm+phrasing|{c}")
         if x and not x.get("not_run"):
-            parts.append(f"on {label}, {x['model_replies_spoken']} model replies spoken, "
+            parts.append(f"on {label} {x['model_replies_spoken']} model replies spoken, "
                          f"{x['model_replies_rejected']} rejected, reply language kept {_f(x['reply_language_adherence'])}, "
                          f"{x['spoken_replies_with_ungrounded_facts']} replies with an ungrounded fact")
-    return ("With the 9B model rewording replies: " + "; ".join(parts) + ".") if parts else ""
+    return ("With the 9B model rewording replies, " + ". Then ".join(parts) + ".") if parts else ""
 
 
 def trace_table(r: dict) -> list[str]:
@@ -156,7 +156,7 @@ def rubric_sentence(r: dict) -> str:
     return (f"Gulf dialect rubric (arXiv 2608.29990), calibrated score out of 1: agent templates {_f(t['mean_score_calibrated'])} "
             f"over {t['replies']} replies, 9B rewordings {_f(m['mean_score_calibrated'])} over {m['replies']} "
             f"(penalties: {pens}). Judge {rb['judge']} agrees with {c['anchors']} labelled anchors on "
-            f"{_f(c['criterion_agreement'])} of criteria; native-speaker spot check "
+            f"{_f(c['criterion_agreement'])} of criteria. Native-speaker spot check "
             f"{'done' if rb['spot_check']['done'] else 'not done yet'}.")
 
 
@@ -167,8 +167,8 @@ def bargein_line(r: dict, v1: dict) -> str:
              for d, n in names.items() if d in b]
     worst = max((b[d]["latency_max_s"] for d in names if d in b), default=None)
     echo = sum(b[d]["false_stops_on_echo_only"] for d in names if d in b)
-    return (f"Barge-in, agent stopped within 0.2 s of the caller: {', '.join(parts)}. Slowest stop {_f(worst, 2)} s; "
-            f"false stops on the agent's own echo: {echo}.")
+    return (f"Barge-in, agent stopped within 0.2 s of the caller: {', '.join(parts)}. Slowest stop {_f(worst, 2)} s, "
+            f"and false stops on the agent's own echo: {echo}.")
 
 
 def tables(r: dict, v1: dict) -> str:
@@ -181,7 +181,7 @@ def tables(r: dict, v1: dict) -> str:
     out += ["Acoustic stress on the local config, TRACE style (arXiv 2609.29452), plot in `eval/trace.svg`:", "",
             *trace_table(r), "",
             "Turn latency on the development CPU, all turns, target 1.5 s. Timed from when the caller's 0.5 s pause "
-            "closes the turn; early decode starts recognition on the pause's first frame:", "",
+            "closes the turn. Early decode starts recognition on the first quiet frame:", "",
             *latency_table(r, v1), "", toolnoise_line(r), "", rubric_sentence(r), "", bargein_line(r, v1)]
     return "\n".join(out) + "\n"
 

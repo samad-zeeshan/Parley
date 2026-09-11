@@ -1,0 +1,73 @@
+/* Same palette as the local push-to-talk page in web/, so the two read as one product. */
+:root {
+  --bg: #f7f5f0; --panel: #ffffff; --ink: #1d1b16; --muted: #6b6558; --line: #e4dfd3;
+  --accent: #0f6e5c; --accent-ink: #ffffff; --caller: #eef4f2; --agent: #f4f1ea; --warn: #9a3b1a;
+  --warn-bg: #fbeee8; --ok-bg: #e9f4ef;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #151412; --panel: #1f1d1a; --ink: #eeeae1; --muted: #a39d90; --line: #34312b;
+    --accent: #3fb59b; --accent-ink: #0d1411; --caller: #1c2926; --agent: #2a2721; --warn: #f08a62;
+    --warn-bg: #2e1f19; --ok-bg: #17271f;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+       font: 16px/1.5 system-ui, "Segoe UI", "Noto Sans Arabic", Tahoma, sans-serif; }
+main { max-width: 1000px; margin: 0 auto; padding: 28px 16px 48px; }
+h1 { font-size: 1.6rem; margin: 0 0 6px; }
+h2 { font-size: 1rem; margin: 0 0 8px; }
+.lede { margin: 0 0 20px; max-width: 70ch; }
+.muted { color: var(--muted); font-size: 0.9rem; }
+
+.calls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.calls button { font: inherit; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line);
+                background: var(--panel); color: var(--ink); cursor: pointer; min-height: 44px; }
+.calls button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.calls button.surprise { border-style: dashed; }
+.calls button.surprise[aria-pressed="true"] { background: var(--warn); border-color: var(--warn); color: #fff; }
+
+.stage { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.player { display: flex; align-items: center; gap: 12px; }
+.play { font: inherit; font-weight: 600; background: var(--accent); color: var(--accent-ink); border: 0;
+        border-radius: 999px; padding: 10px 20px; cursor: pointer; min-height: 44px; min-width: 88px; }
+.bar { flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; cursor: pointer; }
+#progress { height: 100%; width: 0; background: var(--accent); }
+.clock { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 3.5em; text-align: right; }
+.note { color: var(--muted); font-size: 0.9rem; margin: 10px 0 0; min-height: 1.4em; }
+
+.columns { display: grid; grid-template-columns: 1fr 280px; gap: 16px; margin-top: 12px; }
+@media (max-width: 760px) { .columns { grid-template-columns: 1fr; } }
+.log { min-height: 360px; max-height: 60vh; overflow-y: auto; padding-right: 4px; }
+.msg { border-radius: 10px; padding: 10px 12px; margin: 8px 0; opacity: 0; transform: translateY(4px);
+       transition: opacity 0.25s ease, transform 0.25s ease; }
+.msg.on { opacity: 1; transform: none; }
+.msg.now { outline: 2px solid var(--accent); outline-offset: 1px; }
+.caller { background: var(--caller); margin-left: 12%; }
+.agent { background: var(--agent); margin-right: 12%; }
+.who { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.text { font-size: 1.05rem; }
+.text[dir="rtl"] { text-align: right; }
+.latin { color: var(--muted); font-size: 0.88rem; font-style: italic; }
+.said { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+.tag { display: inline-block; font-size: 0.72rem; padding: 1px 6px; border-radius: 4px; margin-left: 6px;
+       background: var(--warn-bg); color: var(--warn); }
+@media (prefers-reduced-motion: reduce) { .msg { transition: none; transform: none; } }
+
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.card.ok { background: var(--ok-bg); border-color: var(--accent); }
+.card.warn { background: var(--warn-bg); border-color: var(--warn); }
+.card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 0.92rem; }
+.card dt { color: var(--muted); }
+.card dd { margin: 0; }
+.switch { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 8px; font-size: 0.92rem; cursor: pointer; }
+.switch input { margin-top: 4px; }
+.rejected { border: 1px dashed var(--warn); border-radius: 10px; padding: 12px; font-size: 0.92rem; }
+.rejected s { color: var(--warn); }
+
+.numbers { margin-top: 24px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.tile b { display: block; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+footer { margin-top: 28px; color: var(--muted); font-size: 0.88rem; }
+footer a { color: var(--accent); }

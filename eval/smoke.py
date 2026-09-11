@@ -1,7 +1,6 @@
-"""ASR smoke test for ADR 0001: WER per dialect for each Whisper size on CPU.
+"""ASR smoke test used to choose the Whisper size: WER per dialect for each size on CPU.
 
-Run: uv run --extra speech python -m eval.smoke [sizes...]
-Writes eval/smoke_results.json.
+    uv run --extra speech python -m eval.smoke [sizes...]    # writes eval/smoke_results.json
 """
 
 from __future__ import annotations

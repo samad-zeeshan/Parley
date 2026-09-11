@@ -1,6 +1,6 @@
-"""Held-out labelled items for the Jev heads: temperature fitting, threshold choice, and the
-model smoke test in ADR 0004. None of these lines is in eval/scripts.py, so the evaluation
-never scores a head on the data it was calibrated on. Synthetic only.
+"""Held-out labelled items for fitting the Jev temperatures and threshold. Synthetic only.
+
+None of these lines is in eval/scripts, so no head is scored on the data it was calibrated on.
 """
 
 from __future__ import annotations

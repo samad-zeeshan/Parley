@@ -900,6 +900,345 @@
         "model_replies_spoken": 0,
         "model_replies_rejected": 0,
         "runtime_s": 610.3
+      },
+      "llm|asr:local": {
+        "caller_turns": 535,
+        "replies": 535,
+        "transcript_wer": 0.402,
+        "intent_accuracy": 0.574,
+        "slot_f1": 0.638,
+        "reply_language_adherence": 0.903,
+        "by_dialect": {
+          "en": {
+            "turns": 110,
+            "intent_accuracy": 0.382,
+            "slot_f1": 0.627
+          },
+          "ar-gulf": {
+            "turns": 140,
+            "intent_accuracy": 0.571,
+            "slot_f1": 0.702
+          },
+          "ar-msa": {
+            "turns": 125,
+            "intent_accuracy": 0.72,
+            "slot_f1": 0.803
+          },
+          "mixed": {
+            "turns": 160,
+            "intent_accuracy": 0.594,
+            "slot_f1": 0.48
+          }
+        },
+        "completed": 13,
+        "calls": 40,
+        "wrong_actions": 4,
+        "spoken_replies_with_ungrounded_facts": 0,
+        "model_replies_spoken": 0,
+        "model_replies_rejected": 0,
+        "runtime_s": 750.3
+      },
+      "llm|asr:hosted": {
+        "not_run": true
+      },
+      "llm|noise@0.1": {
+        "caller_turns": 389,
+        "replies": 389,
+        "transcript_wer": 0.097,
+        "intent_accuracy": 0.668,
+        "slot_f1": 0.806,
+        "reply_language_adherence": 0.982,
+        "by_dialect": {
+          "en": {
+            "turns": 93,
+            "intent_accuracy": 0.667,
+            "slot_f1": 0.811
+          },
+          "ar-gulf": {
+            "turns": 115,
+            "intent_accuracy": 0.626,
+            "slot_f1": 0.778
+          },
+          "ar-msa": {
+            "turns": 90,
+            "intent_accuracy": 0.733,
+            "slot_f1": 0.84
+          },
+          "mixed": {
+            "turns": 91,
+            "intent_accuracy": 0.659,
+            "slot_f1": 0.8
+          }
+        },
+        "completed": 34,
+        "calls": 40,
+        "wrong_actions": 9,
+        "spoken_replies_with_ungrounded_facts": 0,
+        "model_replies_spoken": 0,
+        "model_replies_rejected": 0,
+        "runtime_s": 582.1
+      },
+      "llm|noise@0.3": {
+        "caller_turns": 584,
+        "replies": 584,
+        "transcript_wer": 0.292,
+        "intent_accuracy": 0.435,
+        "slot_f1": 0.523,
+        "reply_language_adherence": 0.978,
+        "by_dialect": {
+          "en": {
+            "turns": 148,
+            "intent_accuracy": 0.446,
+            "slot_f1": 0.488
+          },
+          "ar-gulf": {
+            "turns": 167,
+            "intent_accuracy": 0.401,
+            "slot_f1": 0.508
+          },
+          "ar-msa": {
+            "turns": 143,
+            "intent_accuracy": 0.455,
+            "slot_f1": 0.537
+          },
+          "mixed": {
+            "turns": 126,
+            "intent_accuracy": 0.444,
+            "slot_f1": 0.565
+          }
+        },
+        "completed": 9,
+        "calls": 40,
+        "wrong_actions": 7,
+        "spoken_replies_with_ungrounded_facts": 0,
+        "model_replies_spoken": 0,
+        "model_replies_rejected": 0,
+        "runtime_s": 699.0
+      },
+      "llm|split": {
+        "caller_turns": 332,
+        "replies": 552,
+        "transcript_wer": 0.0,
+        "intent_accuracy": 0.768,
+        "slot_f1": 0.828,
+        "reply_language_adherence": 0.944,
+        "by_dialect": {
+          "en": {
+            "turns": 83,
+            "intent_accuracy": 0.88,
+            "slot_f1": 0.824
+          },
+          "ar-gulf": {
+            "turns": 82,
+            "intent_accuracy": 0.72,
+            "slot_f1": 0.876
+          },
+          "ar-msa": {
+            "turns": 82,
+            "intent_accuracy": 0.866,
+            "slot_f1": 0.837
+          },
+          "mixed": {
+            "turns": 85,
+            "intent_accuracy": 0.612,
+            "slot_f1": 0.785
+          }
+        },
+        "completed": 29,
+        "calls": 40,
+        "wrong_actions": 0,
+        "spoken_replies_with_ungrounded_facts": 0,
+        "model_replies_spoken": 0,
+        "model_replies_rejected": 0,
+        "runtime_s": 780.2
+      },
+      "jev|reference": {
+        "caller_turns": 397,
+        "replies": 397,
+        "transcript_wer": 0.0,
+        "intent_accuracy": 0.642,
+        "slot_f1": 0.982,
+        "reply_language_adherence": 1.0,
+        "by_dialect": {
+          "en": {
+            "turns": 75,
+            "intent_accuracy": 0.88,
+            "slot_f1": 0.97
+          },
+          "ar-gulf": {
+            "turns": 149,
+            "intent_accuracy": 0.342,
+            "slot_f1": 0.997
+          },
+          "ar-msa": {
+            "turns": 85,
+            "intent_accuracy": 0.741,
+            "slot_f1": 0.987
+          },
+          "mixed": {
+            "turns": 88,
+            "intent_accuracy": 0.852,
+            "slot_f1": 0.963
+          }
+        },
+        "completed": 27,
+        "calls": 40,
+        "wrong_actions": 0,
+        "spoken_replies_with_ungrounded_facts": 0,
+        "model_replies_spoken": 0,
+        "model_replies_rejected": 0,
+        "runtime_s": 599.8
+      },
+      "jev|asr:local": {
+        "caller_turns": 537,
+        "replies": 537,
+        "transcript_wer": 0.37,
+        "intent_accuracy": 0.693,
+        "slot_f1": 0.631,
+        "reply_language_adherence": 0.911,
+        "by_dialect": {
+          "en": {
+            "turns": 110,
+            "intent_accuracy": 0.545,
+            "slot_f1": 0.623
+          },
+          "ar-gulf": {
+            "turns": 131,
+            "intent_accuracy": 0.656,
+            "slot_f1": 0.701
+          },
+          "ar-msa": {
+            "turns": 136,
+            "intent_accuracy": 0.743,
+            "slot_f1": 0.757
+          },
+          "mixed": {
+            "turns": 160,
+            "intent_accuracy": 0.781,
+            "slot_f1": 0.482
+          }
+        },
+        "completed": 14,
+        "calls": 40,
+        "wrong_actions": 4,
+        "spoken_replies_with_ungrounded_facts": 0,
+        "model_replies_spoken": 0,
+        "model_replies_rejected": 0,
+        "runtime_s": 855.3
+      },
+      "jev|asr:hosted": {
+        "not_run": true
+      },
+      "jev|noise@0.1": {
+        "caller_turns": 440,
+        "replies": 440,
+        "transcript_wer": 0.092,
+        "intent_accuracy": 0.609,
+        "slot_f1": 0.755,
+        "reply_language_adherence": 0.984,
+        "by_dialect": {
+          "en": {
+            "turns": 94,
+            "intent_accuracy": 0.766,
+            "slot_f1": 0.813
+          },
+          "ar-gulf": {
+            "turns": 153,
+            "intent_accuracy": 0.379,
+            "slot_f1": 0.67
+          },
+          "ar-msa": {
+            "turns": 99,
+            "intent_accuracy": 0.667,
+            "slot_f1": 0.802
+          },
+          "mixed": {
+            "turns": 94,
+            "intent_accuracy": 0.766,
+            "slot_f1": 0.779
+          }
+        },
+        "completed": 25,
+        "calls": 40,
+        "wrong_actions": 5,
+        "spoken_replies_with_ungrounded_facts": 0,
+        "model_replies_spoken": 0,
+        "model_replies_rejected": 0,
+        "runtime_s": 569.0
+      },
+      "jev|noise@0.3": {
+        "caller_turns": 603,
+        "replies": 603,
+        "transcript_wer": 0.294,
+        "intent_accuracy": 0.506,
+        "slot_f1": 0.498,
+        "reply_language_adherence": 0.978,
+        "by_dialect": {
+          "en": {
+            "turns": 147,
+            "intent_accuracy": 0.612,
+            "slot_f1": 0.483
+          },
+          "ar-gulf": {
+            "turns": 172,
+            "intent_accuracy": 0.401,
+            "slot_f1": 0.447
+          },
+          "ar-msa": {
+            "turns": 151,
+            "intent_accuracy": 0.483,
+            "slot_f1": 0.514
+          },
+          "mixed": {
+            "turns": 133,
+            "intent_accuracy": 0.549,
+            "slot_f1": 0.558
+          }
+        },
+        "completed": 5,
+        "calls": 40,
+        "wrong_actions": 6,
+        "spoken_replies_with_ungrounded_facts": 0,
+        "model_replies_spoken": 0,
+        "model_replies_rejected": 0,
+        "runtime_s": 732.9
+      },
+      "jev|split": {
+        "caller_turns": 413,
+        "replies": 720,
+        "transcript_wer": 0.0,
+        "intent_accuracy": 0.646,
+        "slot_f1": 0.893,
+        "reply_language_adherence": 0.944,
+        "by_dialect": {
+          "en": {
+            "turns": 83,
+            "intent_accuracy": 0.916,
+            "slot_f1": 0.847
+          },
+          "ar-gulf": {
+            "turns": 136,
+            "intent_accuracy": 0.353,
+            "slot_f1": 0.93
+          },
+          "ar-msa": {
+            "turns": 93,
+            "intent_accuracy": 0.753,
+            "slot_f1": 0.863
+          },
+          "mixed": {
+            "turns": 101,
+            "intent_accuracy": 0.723,
+            "slot_f1": 0.896
+          }
+        },
+        "completed": 20,
+        "calls": 40,
+        "wrong_actions": 0,
+        "spoken_replies_with_ungrounded_facts": 0,
+        "model_replies_spoken": 0,
+        "model_replies_rejected": 0,
+        "runtime_s": 906.3
       }
     },
     "conditions": [

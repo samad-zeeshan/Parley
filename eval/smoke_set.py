@@ -1,7 +1,6 @@
-"""The 20-utterance smoke set used to choose the ASR model (ADR 0001).
+"""The 20-utterance smoke set used to choose the ASR model. Synthetic only.
 
-Synthetic only. Each item is a list of (language, text) segments so a
-code-switched utterance can be voiced by the matching TTS voice per segment.
+Each item is a list of (language, text) segments so a code-switched line is voiced per segment.
 """
 
 SMOKE_SET = [

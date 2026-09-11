@@ -1,0 +1,703 @@
+{
+ "calls": [
+  {
+   "id": "english",
+   "call_id": "en-booking",
+   "audio": "audio/english.m4a",
+   "duration": 64.69,
+   "turns": [
+    {
+     "who": "caller",
+     "t0": 0.0,
+     "t1": 4.92,
+     "text": "Hi, I would like to book a viewing for a two-bedroom flat in Dubai Marina.",
+     "latin": "",
+     "said": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina."
+    },
+    {
+     "who": "agent",
+     "t0": 5.27,
+     "t1": 6.87,
+     "text": "Which day would you like to view?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 7.42,
+     "t1": 10.73,
+     "text": "Thursday between 4 and 6 in the afternoon.",
+     "latin": "",
+     "said": "Thursday between four and six in the afternoon."
+    },
+    {
+     "who": "agent",
+     "t0": 11.08,
+     "t1": 30.32,
+     "text": "I found these viewings. Option 1: Thursday 1 October at 16:00, a 2 bedroom in Dubai Marina, AED 145,000 a year. Option 2: Thursday 1 October at 17:00, a 2 bedroom in Dubai Marina, AED 155,000 a year. Which option would you like?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 30.87,
+     "t1": 32.81,
+     "text": "The first one, please.",
+     "latin": "",
+     "said": "The first one please."
+    },
+    {
+     "who": "agent",
+     "t0": 33.16,
+     "t1": 34.44,
+     "text": "What is your mobile number?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 34.99,
+     "t1": 39.1,
+     "text": "My number is 050 1234567.",
+     "latin": "",
+     "said": "My number is zero five zero one two three four five six seven."
+    },
+    {
+     "who": "agent",
+     "t0": 39.45,
+     "t1": 49.36,
+     "text": "I am holding Thursday 1 October at 16:00 at Unit 4101, Tower B6, Dubai Marina, Dubai. Shall I confirm the booking?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 49.91,
+     "t1": 52.64,
+     "text": "Yes, please confirm the booking.",
+     "latin": "",
+     "said": "Yes, please confirm the booking."
+    },
+    {
+     "who": "agent",
+     "t0": 52.99,
+     "t1": 64.14,
+     "text": "Your viewing is booked for Thursday 1 October at 16:00 at Unit 4101, Tower B6, Dubai Marina, Dubai. Your agent is Rashid. Thank you.",
+     "latin": "",
+     "tag": ""
+    }
+   ],
+   "completed": true,
+   "card_at": 52.99,
+   "booking": {
+    "rows": [
+     [
+      "When",
+      "2026-10-01 at 16:00"
+     ],
+     [
+      "Where",
+      "Unit 4101, Tower B6, Dubai Marina, Dubai"
+     ],
+     [
+      "Rent",
+      "AED 145,000 a year"
+     ],
+     [
+      "Agent",
+      "Rashid"
+     ],
+     [
+      "Caller",
+      "0501234567"
+     ]
+    ]
+   },
+   "outage": null,
+   "note": "Scripted call en-booking on the local-v1 speech config, voiced by a synthetic caller. Caller lines show what the recognizer heard, with the script line underneath when they differ."
+  },
+  {
+   "id": "arabic",
+   "call_id": "gulf-gen-03",
+   "audio": "audio/arabic.m4a",
+   "duration": 130.83,
+   "turns": [
+    {
+     "who": "caller",
+     "t0": 0.0,
+     "t1": 1.35,
+     "text": "مراهبا",
+     "latin": "mrahba",
+     "said": "مرحبا"
+    },
+    {
+     "who": "agent",
+     "t0": 1.7,
+     "t1": 3.99,
+     "text": "في أي منطقة تبحث؟",
+     "latin": "fy ay mntqa tb7th?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 4.54,
+     "t1": 8.65,
+     "text": "أبري أحجز معاينة في دبي مارينا.",
+     "latin": "abry a7jz m3ayna fy dby maryna.",
+     "said": "أبغي أحجز معاينة في دبي مارينا"
+    },
+    {
+     "who": "agent",
+     "t0": 9.0,
+     "t1": 11.41,
+     "text": "كم غرفة نوم تحتاج؟",
+     "latin": "km ghrfa nwm t7taj?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 11.96,
+     "t1": 14.76,
+     "text": "لحظة الله يخليك",
+     "latin": "l7za allh ykhlyk",
+     "said": "لحظة الله يخليك"
+    },
+    {
+     "who": "agent",
+     "t0": 15.11,
+     "t1": 20.16,
+     "text": "عذرا، ما سمعتك زين. كم غرفة نوم تحتاج؟",
+     "latin": "3dhra, ma sm3tk zyn. km ghrfa nwm t7taj?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 20.71,
+     "t1": 22.07,
+     "text": "غرفتين",
+     "latin": "ghrftyn",
+     "said": "غرفتين"
+    },
+    {
+     "who": "agent",
+     "t0": 22.42,
+     "t1": 25.23,
+     "text": "أي يوم يناسبك للمعاينة؟",
+     "latin": "ay ywm ynasbk llm3ayna?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 25.78,
+     "t1": 28.92,
+     "text": "يوم الثلاثاء عقب الظهر.",
+     "latin": "ywm althlatha' 3qb alzhr.",
+     "said": "يوم الثلاثاء عقب الظهر"
+    },
+    {
+     "who": "agent",
+     "t0": 29.27,
+     "t1": 77.35,
+     "text": "لقيت هذه المواعيد. الخيار 1: الثلاثاء 6 أكتوبر الساعة 14:00، غرفتين في دبي مارينا، 145,000 درهم في السنة. الخيار 2: الثلاثاء 6 أكتوبر الساعة 15:00، غرفتين في دبي مارينا، 145,000 درهم في السنة. الخيار 3: الثلاثاء 6 أكتوبر الساعة 16:00، غرفتين في دبي مارينا، 145,000 درهم في السنة. أي خيار يناسبك؟",
+     "latin": "lqyt hdhh almwa3yd. alkhyar 1: althlatha' 6 aktwbr alsa3a 14:00, ghrftyn fy dby maryna, 145,000 drhm fy alsna. alkhyar 2: althlatha' 6 aktwbr alsa3a 15:00, ghrftyn fy dby maryna, 145,000 drhm fy alsna. alkhyar 3: althlatha' 6 aktwbr alsa3a 16:00, ghrftyn fy dby maryna, 145,000 drhm fy alsna. ay khyar ynasbk?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 77.9,
+     "t1": 79.99,
+     "text": "الأول زين",
+     "latin": "alawl zyn",
+     "said": "الأول زين"
+    },
+    {
+     "who": "agent",
+     "t0": 80.34,
+     "t1": 81.84,
+     "text": "ما رقم جوالك؟",
+     "latin": "ma rqm jwalk?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 82.39,
+     "t1": 90.53,
+     "text": "صفر خمسة ثنين خمسة ثمانية تسعة ثمانية ثلاثة واحد تسعة.",
+     "latin": "sfr khmsa thnyn khmsa thmanya ts3a thmanya thlatha wa7d ts3a.",
+     "said": "صفر خمسة اثنين خمسة ثمانية تسعة ثمانية ثلاثة واحد تسعة"
+    },
+    {
+     "who": "agent",
+     "t0": 90.88,
+     "t1": 107.51,
+     "text": "حجزت لك مبدئيا موعد الثلاثاء 6 أكتوبر الساعة 14:00 في شقة 4101، برج ب6، دبي مارينا، دبي. أأكد الحجز؟",
+     "latin": "7jzt lk mbd'ya mw3d althlatha' 6 aktwbr alsa3a 14:00 fy shqa 4101, brj b6, dby maryna, dby. aakd al7jz?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 108.06,
+     "t1": 111.3,
+     "text": "أكد الحجز الله يعافيك.",
+     "latin": "akd al7jz allh y3afyk.",
+     "said": "أكد الحجز الله يعافيك"
+    },
+    {
+     "who": "agent",
+     "t0": 111.65,
+     "t1": 130.28,
+     "text": "تم الحجز. موعد المعاينة الثلاثاء 6 أكتوبر الساعة 14:00 في شقة 4101، برج ب6، دبي مارينا، دبي. الوكيل راشد. شكرا لك.",
+     "latin": "tm al7jz. mw3d alm3ayna althlatha' 6 aktwbr alsa3a 14:00 fy shqa 4101, brj b6, dby maryna, dby. alwkyl rashd. shkra lk.",
+     "tag": ""
+    }
+   ],
+   "completed": true,
+   "card_at": 111.65,
+   "booking": {
+    "rows": [
+     [
+      "When",
+      "2026-10-06 at 14:00"
+     ],
+     [
+      "Where",
+      "شقة 4101، برج ب6، دبي مارينا، دبي"
+     ],
+     [
+      "Rent",
+      "AED 145,000 a year"
+     ],
+     [
+      "Agent",
+      "راشد"
+     ],
+     [
+      "Caller",
+      "0525898319"
+     ]
+    ]
+   },
+   "outage": null,
+   "note": "Scripted call gulf-gen-03 on the local-v1 speech config, voiced by a synthetic caller. Caller lines show what the recognizer heard, with the script line underneath when they differ."
+  },
+  {
+   "id": "switched",
+   "call_id": "switch-gen-07",
+   "audio": "audio/switched.m4a",
+   "duration": 155.84,
+   "turns": [
+    {
+     "who": "caller",
+     "t0": 0.0,
+     "t1": 2.2,
+     "text": "Cooler. Good morning.",
+     "latin": "",
+     "said": "هلا good morning"
+    },
+    {
+     "who": "agent",
+     "t0": 2.55,
+     "t1": 4.21,
+     "text": "Which area are you looking in?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 4.76,
+     "t1": 9.04,
+     "text": "Hello. I want to see a flat. في جزيرة الريين.",
+     "latin": "Hello. I want to see a flat. fy jzyra alryyn.",
+     "said": "Hello, I want to see a flat في جزيرة الريم"
+    },
+    {
+     "who": "agent",
+     "t0": 9.39,
+     "t1": 11.03,
+     "text": "Which area are you looking in?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 11.58,
+     "t1": 13.27,
+     "text": "Sorry. You are welcome.",
+     "latin": "",
+     "said": "sorry, لحظة"
+    },
+    {
+     "who": "agent",
+     "t0": 13.62,
+     "t1": 17.26,
+     "text": "Sorry, I did not catch that. Which area are you looking in?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 17.81,
+     "t1": 22.3,
+     "text": "Hello. I want to see a flat. في جزيرة تري.",
+     "latin": "Hello. I want to see a flat. fy jzyra try.",
+     "said": "Hello, I want to see a flat في جزيرة الريم"
+    },
+    {
+     "who": "agent",
+     "t0": 22.65,
+     "t1": 24.39,
+     "text": "Which area are you looking in?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 24.94,
+     "t1": 30.1,
+     "text": "Hello. I want to see a flat. في جزيرة ترى.",
+     "latin": "Hello. I want to see a flat. fy jzyra tra.",
+     "said": "Hello, I want to see a flat في جزيرة الريم"
+    },
+    {
+     "who": "agent",
+     "t0": 30.45,
+     "t1": 32.07,
+     "text": "Which area are you looking in?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 32.62,
+     "t1": 38.09,
+     "text": "Hello. I want to see a flat. في جزيرة ترين.",
+     "latin": "Hello. I want to see a flat. fy jzyra tryn.",
+     "said": "Hello, I want to see a flat في جزيرة الريم"
+    },
+    {
+     "who": "agent",
+     "t0": 38.44,
+     "t1": 40.17,
+     "text": "Which area are you looking in?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 40.72,
+     "t1": 46.75,
+     "text": "Hello. I want a seal of flat. في جزيلة ري.",
+     "latin": "Hello. I want a seal of flat. fy jzyla ry.",
+     "said": "Hello, I want to see a flat في جزيرة الريم"
+    },
+    {
+     "who": "agent",
+     "t0": 47.1,
+     "t1": 48.78,
+     "text": "Which area are you looking in?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 49.33,
+     "t1": 55.75,
+     "text": "Hello. I want to see a flat. في جزيرة ترين.",
+     "latin": "Hello. I want to see a flat. fy jzyra tryn.",
+     "said": "Hello, I want to see a flat في جزيرة الريم"
+    },
+    {
+     "who": "agent",
+     "t0": 56.1,
+     "t1": 57.77,
+     "text": "Which area are you looking in?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 58.32,
+     "t1": 65.06,
+     "text": "Hello. I want to see a flat. في جزيرة الريم.",
+     "latin": "Hello. I want to see a flat. fy jzyra alrym.",
+     "said": "Hello, I want to see a flat في جزيرة الريم"
+    },
+    {
+     "who": "agent",
+     "t0": 65.41,
+     "t1": 67.35,
+     "text": "How many bedrooms do you need?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 67.9,
+     "t1": 74.36,
+     "text": "To bedroom. والميزانية مية وخمسة وخمسين الف.",
+     "latin": "To bedroom. walmyzanya mya wkhmsa wkhmsyn alf.",
+     "said": "two bedroom والميزانية مية وخمسة وخمسين ألف"
+    },
+    {
+     "who": "agent",
+     "t0": 74.71,
+     "t1": 77.14,
+     "text": "كم غرفة نوم تحتاج؟",
+     "latin": "km ghrfa nwm t7taj?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 77.69,
+     "t1": 84.63,
+     "text": "To bedroom. والميزانية مية وخمسة وخمسين الف.",
+     "latin": "To bedroom. walmyzanya mya wkhmsa wkhmsyn alf.",
+     "said": "two bedroom والميزانية مية وخمسة وخمسين ألف"
+    },
+    {
+     "who": "agent",
+     "t0": 84.98,
+     "t1": 87.27,
+     "text": "كم غرفة نوم تحتاج؟",
+     "latin": "km ghrfa nwm t7taj?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 87.82,
+     "t1": 94.88,
+     "text": "To bedroom. والميزانية مية وخمسة وخمسين الف.",
+     "latin": "To bedroom. walmyzanya mya wkhmsa wkhmsyn alf.",
+     "said": "two bedroom والميزانية مية وخمسة وخمسين ألف"
+    },
+    {
+     "who": "agent",
+     "t0": 95.23,
+     "t1": 97.72,
+     "text": "كم غرفة نوم تحتاج؟",
+     "latin": "km ghrfa nwm t7taj?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 98.27,
+     "t1": 106.53,
+     "text": "Two bedroom. والميزانية مية وخمسة وخمسين ألف.",
+     "latin": "Two bedroom. walmyzanya mya wkhmsa wkhmsyn alf.",
+     "said": "two bedroom والميزانية مية وخمسة وخمسين ألف"
+    },
+    {
+     "who": "agent",
+     "t0": 106.88,
+     "t1": 109.71,
+     "text": "أي يوم يناسبك للمعاينة؟",
+     "latin": "ay ywm ynasbk llm3ayna?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 110.26,
+     "t1": 112.46,
+     "text": "Wednesday أي وفر.",
+     "latin": "Wednesday ay wfr.",
+     "said": "Wednesday أي وقت"
+    },
+    {
+     "who": "agent",
+     "t0": 112.81,
+     "t1": 114.28,
+     "text": "ما رقم جوالك؟",
+     "latin": "ma rqm jwalk?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 114.83,
+     "t1": 124.06,
+     "text": "My number is. صفر خمسة، صفر أربعة ثلاثة ثمانية خمسة ثمانية واحد سبعة.",
+     "latin": "My number is. sfr khmsa, sfr arb3a thlatha thmanya khmsa thmanya wa7d sb3a.",
+     "said": "my number is صفر خمسة صفر أربعة ثلاثة ثمانية خمسة ثمانية واحد سبعة"
+    },
+    {
+     "who": "agent",
+     "t0": 124.41,
+     "t1": 140.82,
+     "text": "حجزت لك مبدئيا موعد الأربعاء 7 أكتوبر الساعة 11:00 في شقة 1108، برج ح9، جزيرة الريم، أبوظبي. أأكد الحجز؟",
+     "latin": "7jzt lk mbd'ya mw3d alarb3a' 7 aktwbr alsa3a 11:00 fy shqa 1108, brj 79, jzyra alrym, abwzby. aakd al7jz?",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 141.37,
+     "t1": 143.69,
+     "text": "تمام. Confirm the booking.",
+     "latin": "tmam. Confirm the booking.",
+     "said": "تمام confirm the booking"
+    },
+    {
+     "who": "agent",
+     "t0": 144.04,
+     "t1": 155.29,
+     "text": "Your viewing is booked for Wednesday 7 October at 11:00 at Unit 1108, Tower F9, Al Reem Island, Abu Dhabi. Your agent is Rashid. Thank you.",
+     "latin": "",
+     "tag": ""
+    }
+   ],
+   "completed": true,
+   "card_at": 144.04,
+   "booking": {
+    "rows": [
+     [
+      "When",
+      "2026-10-07 at 11:00"
+     ],
+     [
+      "Where",
+      "Unit 1108, Tower F9, Al Reem Island, Abu Dhabi"
+     ],
+     [
+      "Rent",
+      "AED 140,000 a year"
+     ],
+     [
+      "Agent",
+      "Rashid"
+     ],
+     [
+      "Caller",
+      "0504385817"
+     ]
+    ]
+   },
+   "outage": null,
+   "note": "Scripted call switch-gen-07 on the local-2pass speech config, voiced by a synthetic caller. Caller lines show what the recognizer heard, with the script line underneath when they differ."
+  },
+  {
+   "id": "outage",
+   "call_id": "en-booking",
+   "audio": "audio/outage.m4a",
+   "duration": 63.5,
+   "turns": [
+    {
+     "who": "caller",
+     "t0": 0.0,
+     "t1": 4.92,
+     "text": "Hi, I would like to book a viewing for a two-bedroom flat in Dubai Marina.",
+     "latin": "",
+     "said": "Hi, I would like to book a viewing for a two bedroom flat in Dubai Marina."
+    },
+    {
+     "who": "agent",
+     "t0": 5.27,
+     "t1": 6.93,
+     "text": "Which day would you like to view?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 7.48,
+     "t1": 10.79,
+     "text": "Thursday between 4 and 6 in the afternoon.",
+     "latin": "",
+     "said": "Thursday between four and six in the afternoon."
+    },
+    {
+     "who": "agent",
+     "t0": 11.14,
+     "t1": 30.57,
+     "text": "I found these viewings. Option 1: Thursday 1 October at 16:00, a 2 bedroom in Dubai Marina, AED 145,000 a year. Option 2: Thursday 1 October at 17:00, a 2 bedroom in Dubai Marina, AED 155,000 a year. Which option would you like?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 31.12,
+     "t1": 33.07,
+     "text": "The first one, please.",
+     "latin": "",
+     "said": "The first one please."
+    },
+    {
+     "who": "agent",
+     "t0": 33.42,
+     "t1": 34.76,
+     "text": "What is your mobile number?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 35.31,
+     "t1": 39.43,
+     "text": "My number is 050 1234567.",
+     "latin": "",
+     "said": "My number is zero five zero one two three four five six seven."
+    },
+    {
+     "who": "agent",
+     "t0": 39.78,
+     "t1": 49.93,
+     "text": "I am holding Thursday 1 October at 16:00 at Unit 4101, Tower B6, Dubai Marina, Dubai. Shall I confirm the booking?",
+     "latin": "",
+     "tag": ""
+    },
+    {
+     "who": "caller",
+     "t0": 50.48,
+     "t1": 53.21,
+     "text": "Yes, please confirm the booking.",
+     "latin": "",
+     "said": "Yes, please confirm the booking."
+    },
+    {
+     "who": "agent",
+     "t0": 53.56,
+     "t1": 62.95,
+     "text": "Sorry, the booking system is not answering properly, so I cannot confirm anything right now. We will call you back on 0501234567.",
+     "latin": "",
+     "tag": "safe reply"
+    }
+   ],
+   "completed": false,
+   "card_at": 53.56,
+   "booking": null,
+   "outage": {
+    "title": "No booking claimed",
+    "lines": [
+     "The booking API did not answer the confirm call, even after one retry.",
+     "A callback to 0501234567 is queued in the audit log."
+    ]
+   },
+   "note": "Call en-booking again, but the booking API stops answering at the confirm step. Parley says so, claims nothing, and queues a callback."
+  }
+ ],
+ "grounding": {
+  "intro": "From a recorded call (gulf-booking). The local model reworded the booking confirmation and got a fact wrong. The grounding check caught it, so the template was spoken instead.",
+  "model_reply": "تم تأكيد حجز معاينة الشقة يوم السبت الثالث من أكتوبر الساعة الرابعة عصراً. الموعد في شقة 2711 ببرج جي2 في البرشاء، دبي، والوكيل هو عمر.",
+  "flagged": "time",
+  "spoken": "تم الحجز. موعد المعاينة السبت 3 أكتوبر الساعة 14:00 في شقة 2711، برج خ2، البرشاء، دبي. الوكيل عمر. شكرا لك.",
+  "footnote": "The check reads dates, times, prices, phone numbers, areas and towers after the same number normalization the speech recognizer output gets."
+ },
+ "summary": {
+  "tiles": [
+   {
+    "value": "17 of 40",
+    "label": "scripted calls booked (local-v1)"
+   },
+   {
+    "value": "1 of 10",
+    "label": "code-switched calls booked, best local config (v1: 0 of 2)"
+   },
+   {
+    "value": "0",
+    "label": "false facts spoken across 7 backend fault modes"
+   },
+   {
+    "value": "1.22 s",
+    "label": "turn latency p95, fastest local config (local-tiny, books 6 of 40)"
+   }
+  ],
+  "note": "All from eval/results.json. The README has every table, including the rows that got worse."
+ }
+}

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parley: a phone agent for property viewings</title>
+<meta name="description" content="Recorded calls to Parley, a phone agent that books property viewings in English, Gulf Arabic or both in one sentence.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>Parley</h1>
+    <p class="lede">Parley answers the phone for a property agency, in English, Gulf Arabic or both in one sentence.
+      It books a viewing, only ever says prices and addresses the listings database returned, and works with no
+      internet connection. Pick a call and press play.</p>
+  </header>
+
+  <nav class="calls" aria-label="Recorded calls">
+    <button type="button" data-call="english">English call</button>
+    <button type="button" data-call="arabic">Arabic call</button>
+    <button type="button" data-call="switched">Code-switched call</button>
+    <button type="button" data-call="outage" class="surprise">Tool outage</button>
+  </nav>
+
+  <section class="stage" aria-live="polite">
+    <div class="player">
+      <button type="button" id="play" class="play" aria-label="Play">Play</button>
+      <div class="bar"><div id="progress"></div></div>
+      <span id="clock" class="clock"></span>
+    </div>
+    <p id="note" class="note"></p>
+    <div class="columns">
+      <div id="log" class="log"></div>
+      <aside>
+        <div id="card" class="card empty">
+          <h2>Booking</h2>
+          <p class="muted">Appears when the booking API confirms it.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="show-rejected">
+          <span>Show what the grounding check rejected</span>
+        </label>
+        <div id="rejected" class="rejected" hidden></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="numbers" aria-label="Results">
+    <h2>From the evaluation</h2>
+    <div id="numbers" class="tiles"></div>
+    <p class="muted" id="numbers-note"></p>
+  </section>
+
+  <footer>
+    <p>These are recorded runs from the evaluation, replayed. Every voice is synthetic, and every listing, agent
+      and phone number is made up. There is no live line: the hosted speech configuration has no credentials, so
+      nothing here talks to a server.
+      <a href="https://github.com/samad-zeeshan/Parley">Source and results</a>.</p>
+  </footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
