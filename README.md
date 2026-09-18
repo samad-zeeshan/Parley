@@ -4,9 +4,9 @@ Parley answers the phone for a property agency, in English, Gulf Arabic or both 
 viewing, only ever says prices and addresses the listings database returned, and works with no internet
 connection.
 
-**Demo:** [samad-zeeshan.github.io/Parley](https://samad-zeeshan.github.io/Parley/) replays recorded calls in English, Arabic and a mix of both, plus one where the booking system fails mid-call. A longer recording is in [docs/demo.mp4](docs/demo.mp4).
+**Demo:** [samad-zeeshan.github.io/Parley](https://samad-zeeshan.github.io/Parley/) replays recorded calls in English, Arabic and a mix of both, plus one where the booking system fails mid-call. Each fact Parley speaks is marked with the booking API call it came from. A longer recording is in [docs/demo.mp4](docs/demo.mp4).
 
-![A recorded Arabic call in the demo](docs/demo.gif)
+![An Arabic call in the demo, with the booking confirmed](docs/demo.gif)
 
 ## How it works
 ![Two speech stacks, one dialogue layer](docs/diagrams/speech-stacks.png)

@@ -4,62 +4,117 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Parley: a phone agent for property viewings</title>
-<meta name="description" content="Recorded calls to Parley, a phone agent that books property viewings in English, Gulf Arabic or both in one sentence.">
+<meta name="description" content="Recorded calls to Parley, a phone agent that books property viewings in English, Gulf Arabic or both in one sentence. Every fact it speaks is traced to the booking API call it came from.">
+<meta name="theme-color" content="#15110e">
+<meta property="og:title" content="Parley: a phone agent for property viewings">
+<meta property="og:description" content="Recorded calls in English, Gulf Arabic and both at once, with every spoken fact traced to its API call.">
+<meta property="og:type" content="website">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<a class="skip" href="#line">Skip to the calls</a>
+
+<header class="masthead">
+  <h1 translate="no">Parley</h1>
+  <p class="lede">Parley answers the phone for a property agency, in English, Gulf Arabic or both in one sentence.
+    It books a viewing, only says prices and addresses the listings database returned, and works with no internet
+    connection. Pick a call and press play.</p>
+</header>
+
 <main>
-  <header>
-    <h1>Parley</h1>
-    <p class="lede">Parley answers the phone for a property agency, in English, Gulf Arabic or both in one sentence.
-      It books a viewing, only ever says prices and addresses the listings database returned, and works with no
-      internet connection. Pick a call and press play.</p>
-  </header>
-
-  <nav class="calls" aria-label="Recorded calls">
-    <button type="button" data-call="english">English call</button>
-    <button type="button" data-call="arabic">Arabic call</button>
-    <button type="button" data-call="switched">Code-switched call</button>
-    <button type="button" data-call="outage" class="surprise">Tool outage</button>
-  </nav>
-
-  <section class="stage" aria-live="polite">
-    <div class="player">
-      <button type="button" id="play" class="play" aria-label="Play">Play</button>
-      <div class="bar"><div id="progress"></div></div>
-      <span id="clock" class="clock"></span>
+  <section id="line" class="line" aria-label="Recorded calls">
+    <div class="dial" role="group" aria-label="Pick a call">
+      <span class="dial-thumb" aria-hidden="true"></span>
+      <button type="button" data-call="english" aria-pressed="false">English</button>
+      <button type="button" data-call="arabic" aria-pressed="false">Arabic</button>
+      <button type="button" data-call="switched" aria-pressed="false">Code-switched</button>
+      <button type="button" data-call="outage" aria-pressed="false" class="fault">Tool outage</button>
     </div>
     <p id="note" class="note"></p>
-    <div class="columns">
-      <div id="log" class="log"></div>
-      <aside>
-        <div id="card" class="card empty">
-          <h2>Booking</h2>
-          <p class="muted">Appears when the booking API confirms it.</p>
+
+    <div class="deck">
+      <button type="button" id="play" class="play" aria-label="Play" disabled>
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+      <div class="wave-wrap">
+        <canvas id="wave" class="wave" role="slider" tabindex="0" aria-label="Position in the call"
+                aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></canvas>
+        <div class="legend" aria-hidden="true">
+          <span class="key caller">Caller</span>
+          <span class="key agent">Parley</span>
+          <span class="key event" id="event-key">Booking confirmed</span>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="show-rejected">
-          <span>Show what the grounding check rejected</span>
-        </label>
-        <div id="rejected" class="rejected" hidden></div>
-      </aside>
+      </div>
+      <p class="clock" aria-live="off"><span id="clock">-:--</span><span class="of"> / <span id="total">-:--</span></span></p>
     </div>
   </section>
 
-  <section class="numbers" aria-label="Results">
-    <h2>From the evaluation</h2>
-    <div id="numbers" class="tiles"></div>
-    <p class="muted" id="numbers-note"></p>
+  <div class="split">
+    <section class="transcript" aria-labelledby="transcript-h">
+      <h2 id="transcript-h">Transcript</h2>
+      <p class="hint">Caller lines show what the speech recognizer heard. Facts Parley speaks are underlined, and
+        each one is stamped with the booking API call that returned it.</p>
+      <ol id="log" class="log" aria-live="polite"></ol>
+      <p id="log-empty" class="log-empty">Press play. Each line appears as it is spoken.</p>
+    </section>
+
+    <aside class="side">
+      <section id="card" class="ticket" data-state="pending" aria-live="polite" aria-labelledby="card-h">
+        <h2 id="card-h">Booking</h2>
+        <div id="card-body"></div>
+      </section>
+
+      <section class="check" aria-labelledby="check-h">
+        <h2 id="check-h">Grounding check</h2>
+        <p>Before anything is spoken, every date, time, price, phone number, area and tower in the reply is
+          compared with what the booking API returned in this call.</p>
+        <button type="button" id="show-rejected" class="switch" role="switch" aria-checked="false"
+                aria-controls="rejected">
+          <span class="track" aria-hidden="true"><span class="knob"></span></span>
+          <span>Show a reply it rejected</span>
+        </button>
+        <div id="rejected" class="rejected" hidden></div>
+      </section>
+    </aside>
+  </div>
+
+  <section class="barge" aria-labelledby="barge-h">
+    <div class="barge-head">
+      <h2 id="barge-h">Talking over Parley</h2>
+      <p id="barge-text" class="barge-text"></p>
+    </div>
+    <div class="barge-deck">
+      <button type="button" id="barge-play" class="play small" aria-label="Play the interruption" disabled>
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+      <canvas id="barge-wave" class="barge-wave" role="img" aria-label="Parley's waveform stops shortly after the caller starts talking"></canvas>
+    </div>
+    <dl id="barge-stats" class="barge-stats"></dl>
   </section>
 
-  <footer>
-    <p>These are recorded runs from the evaluation, replayed. Every voice is synthetic, and every listing, agent
-      and phone number is made up. There is no live line: the hosted speech configuration has no credentials, so
-      nothing here talks to a server.
-      <a href="https://github.com/samad-zeeshan/Parley">Source and results</a>.</p>
-  </footer>
+  <section class="numbers" aria-labelledby="numbers-h">
+    <h2 id="numbers-h">From the evaluation</h2>
+    <dl id="numbers" class="ledger"></dl>
+    <p class="hint" id="numbers-note"></p>
+  </section>
+
+  <p id="load-error" class="load-error" role="alert" hidden>The recorded calls did not load. Reload the page to try
+    again.</p>
 </main>
+
+<footer class="foot">
+  <p>These are recorded runs from the evaluation, replayed. Every voice is synthetic, and every listing, agent and
+    phone number is made up. There is no live line: nothing here talks to a server.
+    <a href="https://github.com/samad-zeeshan/Parley">Source and results</a></p>
+</footer>
 <script src="app.js"></script>
 </body>
 </html>

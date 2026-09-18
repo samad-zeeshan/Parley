@@ -170,6 +170,10 @@ def main() -> None:
     (ROOT / "data").mkdir(exist_ok=True)
     (ROOT / "data" / "calls.json").write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8",
                                               newline="\n")
+    # Peaks, fact sources and the barge-in clip come from a second pass that needs no speech models.
+    import annotate
+
+    annotate.main()
 
 
 if __name__ == "__main__":
