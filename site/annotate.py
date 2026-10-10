@@ -178,7 +178,7 @@ def barge_in(english: dict, pcm: np.ndarray) -> dict:
 
 def rejected_detail(g: dict) -> dict:
     """Re-run the check on the rejected reply, against the slot the same call books on reference text."""
-    cid = re.search(r"\(([\w-]+)\)", g["intro"]).group(1)
+    cid = g.get("call_id") or re.search(r"\(([\w-]+)\)", g["intro"]).group(1)
     out = replay(cid, None)
     t = next(t for t in out["turns"] if t["action"] == "confirmed")
     if t["reply"] != g["spoken"]:

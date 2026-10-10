@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -26,6 +27,17 @@ from speech.tts import PiperTTS  # noqa: E402
 AFTER_CALLER, AFTER_AGENT = 0.35, 0.55
 # The local config that books the most calls on clean audio: the one a customer would run.
 DEPLOYED = "local-v1"
+ARABIC = re.compile(r"[؀-ۿ]")
+VOICE = "A synthetic voice speaks the caller's lines. "
+HEARD = "Caller lines show what Parley heard. If that is different from the script, the script line appears under it."
+NOTES = {
+    "english": "This is a scripted English booking call. " + VOICE + "Parley uses its offline speech setup, which "
+               "needs no internet. " + HEARD,
+    "arabic": "This is a scripted Gulf Arabic booking call. " + VOICE + "Parley uses its offline speech setup, which "
+              "needs no internet. " + HEARD,
+    "switched": "This scripted call moves between Gulf Arabic and English. " + VOICE + "Parley uses a second "
+                "offline setup, which listens to each part between pauses on its own. " + HEARD,
+}
 
 
 def pick(kind: str, local: dict) -> str:
@@ -106,34 +118,53 @@ def grounding_example() -> dict | None:
     if not found:
         return None
     rank, cid, t = min(found, key=lambda x: x[0])
-    return {"intro": f"From a recorded call ({cid}). The local model reworded the booking confirmation and got a "
-                     "fact wrong. The grounding check caught it, so the template was spoken instead.",
+    return {"call_id": cid,
+            "intro": f"This reply comes from a recorded {'Arabic' if ARABIC.search(t['reply']) else 'English'} "
+                     "call. A language model on the same computer reworded the booking confirmation and got a fact "
+                     "wrong. The fact check caught it, so Parley said its fixed wording instead.",
             "model_reply": t["rejected_text"], "flagged": ", ".join(sorted(set(t["rejected"]))),
             "spoken": t["reply"],
-            "footnote": "The check reads dates, times, prices, phone numbers, areas and towers after the same "
-                        "number normalization the speech recognizer output gets."}
+            "footnote": "Before the comparison, the check changes dates, times and prices written as words into "
+                        "numbers. It does the same with the words of the caller."}
 
 
 def summary() -> dict:
     r = json.loads((ROOT.parent / "eval" / "results.json").read_text(encoding="utf-8"))
     v1 = json.loads((ROOT.parent / "eval" / "results_v1.json").read_text(encoding="utf-8"))
     loc = r["speech"][DEPLOYED]["dialogue"]
-    sw = max((s["dialogue"]["task_completion_by_call_language"]["switch"] for k, s in r["speech"].items()
-              if "|" not in k), key=lambda t: t["completed"])
+    sw_key, sw = max(((k, s["dialogue"]["task_completion_by_call_language"]["switch"])
+                      for k, s in r["speech"].items() if "|" not in k), key=lambda kv: kv[1]["completed"])
     v1sw = v1["configs"]["rules"]["task_completion_by_call_language"]["switch"]
     faults = r["tool_noise"]["modes"]
     fastest = min(((k, v) for k, v in r["latency"]["by_config"].items() if "|" not in k),
                   key=lambda kv: kv[1]["early_decode"]["p95_s"])
+    lat = fastest[1]
+    target = r["latency"]["target_s"]
+    fast = lat["early_decode"]["p95_s"] <= target
+    pace = f"under the {target} second target, which is good" if fast else \
+        f"over the {target} second target, which is too slow"
+    # Labels are for a reader outside computing. Config names only ever appear in the small mono tag.
     return {"tiles": [
-        {"value": f"{loc['completed']} of {loc['calls']}", "label": f"scripted calls booked ({DEPLOYED})"},
+        {"value": f"{loc['completed']} of {loc['calls']}", "label": "Calls that ended in a booking, offline setup",
+         "verdict": "Fewer than half of the calls ended in a booking. That is not good enough yet. The tests did "
+                    "not include a cloud setup, so there is no comparison.",
+         "tag": DEPLOYED},
         {"value": f"{sw['completed']} of {sw['calls']}",
-         "label": f"code-switched calls booked, best local config (v1: {v1sw['completed']} of {v1sw['calls']})"},
+         "label": "Calls in both languages that ended in a booking, best offline setup",
+         "verdict": f"This setup booked more of these calls than the first version, which booked "
+                    f"{v1sw['completed']} of {v1sw['calls']}. That is still very few.",
+         "tag": sw_key},
         {"value": str(sum(m["false_facts_spoken"] for m in faults.values())),
-         "label": f"false facts spoken across {len(faults)} backend fault modes"},
-        {"value": f"{fastest[1]['early_decode']['p95_s']} s",
-         "label": f"turn latency p95, fastest local config ({fastest[0]}, books {fastest[1]['completed']} of "
-                  f"{fastest[1]['calls']})"},
-    ], "note": "All from eval/results.json. The README has every table, including the rows that got worse."}
+         "label": "Wrong facts spoken when the booking system failed",
+         "verdict": f"The tests made the booking system fail in {len(faults) - ('clean' in faults)} different "
+                    "ways. Parley never said a wrong fact, which is the result it needs.",
+         "tag": "false_facts_spoken"},
+        {"value": f"{lat['early_decode']['p95_s']} s", "label": "Slowest 1 in 20 replies, fastest offline setup",
+         "verdict": f"That is {pace}. But this setup booked only {lat['completed']} of {lat['calls']} calls, "
+                    "so the fast replies cost many bookings.",
+         "tag": f"p95, {fastest[0]}"},
+    ], "note": "Every figure comes from the saved test results. The project page on GitHub has every table. It "
+               "also shows the results that got worse."}
 
 
 def main() -> None:
@@ -150,20 +181,20 @@ def main() -> None:
         entry = {"id": name, "call_id": cid, "audio": f"audio/{name}.m4a", "duration": duration, "turns": turns,
                  "completed": out["completed"], "card_at": card_at, "booking": None, "outage": None}
         if noisy:
-            entry["note"] = (f"Call {cid} again, but the booking API stops answering at the confirm step. Parley "
-                             "says so, claims nothing, and queues a callback.")
-            entry["outage"] = {"title": "No booking claimed",
-                               "lines": ["The booking API did not answer the confirm call, even after one retry.",
-                                         f"A callback to {state['phone']} is queued in the audit log."
-                                         if state.get("phone") else "No phone was known, so no callback."]}
+            entry["note"] = ("This is the same English call, but the booking system does not answer when Parley "
+                             "tries to confirm. Parley tells the caller, does not claim the viewing is booked, and "
+                             "arranges a call back.")
+            entry["outage"] = {"title": "Not booked, and Parley said so",
+                               "lines": ["The booking system did not answer when Parley tried to confirm, even "
+                                         "after a second try.",
+                                         f"Parley arranged a call back to {state['phone']} and wrote it in the log."
+                                         if state.get("phone") else "Parley did not know a phone number, so it could not arrange a call back."]}
         else:
-            entry["note"] = (f"Scripted call {cid} on the {speech} speech config, voiced by a synthetic caller. "
-                             "Caller lines show what the recognizer heard, with the script line underneath when "
-                             "they differ.")
+            entry["note"] = NOTES[name]
             if out["completed"] and state.get("slot"):
                 entry["booking"] = {"rows": booking_rows(state)}
             else:
-                entry["no_booking"] = "This call did not end in a booking. It is shown as it happened."
+                entry["no_booking"] = "This call did not end in a booking. The page shows it as it happened."
         calls.append(entry)
         print(name, cid, "completed" if out["completed"] else "not completed", f"{duration:.0f} s", flush=True)
     data = {"calls": calls, "grounding": grounding_example(), "summary": summary()}

@@ -17,6 +17,8 @@
   let held = null;
   let raf = 0;
 
+  // Two significant figures for numbers inside sentences. Exact values stay in the stat cells.
+  const round2 = (x) => String(Number(x.toPrecision(2)));
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   const ARABIC = /[؀-ۿ]/;
   const LATIN = /[A-Za-z]/;
@@ -172,7 +174,7 @@
       li.appendChild(ul);
       if (turn.checked) {
         const n = turn.checked.ungrounded;
-        li.appendChild(el("p", "checked", n === 0 ? "grounding check: every fact matched" : `grounding check: ${n} unknown`));
+        li.appendChild(el("p", "checked", n === 0 ? "Fact check: every fact matched." : `Fact check: the booking system did not have ${n} of these facts.`));
       }
       li.addEventListener("pointerover", (e) => hot(li, e.target.closest("[data-group]")));
       li.addEventListener("pointerleave", () => hot(li, null));
@@ -201,7 +203,7 @@
       text = `${d.tool} failed: ${d.error}${d.attempt ? `, try ${d.attempt}` : ""}`;
       cls += " bad";
     } else if (e.action === "callback_requested") {
-      text = `callback queued for ${d.phone}`;
+      text = `call back queued for ${d.phone}`;
       cls += " ok";
     } else if (e.action === "confirm") {
       text = `booked ${d.booking_id}`;
@@ -223,7 +225,7 @@
     if (!show) {
       card.dataset.state = "pending";
       h.textContent = "Booking";
-      body.appendChild(el("p", "muted", "Appears when the booking API confirms it."));
+      body.appendChild(el("p", "muted", "This card shows the booking when the booking system confirms it."));
       return;
     }
     if (c.booking) {
@@ -253,6 +255,7 @@
       h.textContent = c.outage.title;
       body.appendChild(el("p", null, c.outage.lines[0]));
       const last = Math.max(...(c.trace || []).map((e) => e.turn));
+      body.appendChild(el("span", "label", "From the log"));
       const ul = el("ol", "audit");
       ul.setAttribute("aria-label", "Audit log for the confirm step");
       (c.trace || []).filter((e) => e.turn === last).forEach((e) => ul.appendChild(auditLine(e)));
@@ -260,7 +263,7 @@
       if (c.outage.lines[1]) body.appendChild(el("p", "recovery", c.outage.lines[1]));
     } else {
       card.dataset.state = "pending";
-      body.appendChild(el("p", "muted", c.no_booking || "No booking was made."));
+      body.appendChild(el("p", "muted", c.no_booking || "Parley did not make a booking."));
     }
     void body.offsetWidth;
     body.classList.add("enter");
@@ -273,7 +276,7 @@
     const g = data.grounding;
     box.replaceChildren();
     if (!g) {
-      box.appendChild(el("p", "foot-note", "No rejected reply was recorded."));
+      box.appendChild(el("p", "foot-note", "The tests did not record a rejected reply."));
       return;
     }
     box.appendChild(el("p", null, g.intro));
@@ -287,16 +290,18 @@
     const why = el("p", "why");
     if (g.violations && g.violations.length && g.truth) {
       const v = g.violations[0];
-      why.append(`It read the ${v.kind} as ${v.value}. `);
-      why.appendChild(el("code", null, g.truth.call));
-      why.append(` ${g.truth.ref} returned ${g.truth.starts_at.slice(11, 16)}. Rejected.`);
+      why.append(`It gave the ${v.kind} as ${v.value}. The booking system said ${g.truth.starts_at.slice(11, 16)}, so Parley did not use the reply. `);
+      const stamp = el("span", "stamp");
+      stamp.appendChild(el("code", null, g.truth.call));
+      stamp.append(` ${g.truth.ref}`);
+      why.appendChild(stamp);
     } else {
-      why.append(`Flagged: ${g.flagged}. Rejected.`);
+      why.append(`It got the ${g.flagged} wrong, so Parley did not use the reply.`);
     }
     box.appendChild(why);
 
     const spoken = el("div");
-    spoken.appendChild(el("span", "label", "Parley said the checked template instead"));
+    spoken.appendChild(el("span", "label", "Parley said its fixed, checked wording instead"));
     const sp = el("p");
     scriptText(sp, g.spoken);
     spoken.appendChild(sp);
@@ -567,7 +572,7 @@
     wave.setAttribute("aria-valuemax", String(Math.round(current.duration)));
     const key = $("event-key");
     key.hidden = current.card_at == null;
-    key.textContent = current.outage ? "Booking API stops answering" : "Booking confirmed";
+    key.textContent = current.outage ? "Booking system stops answering" : "Booking confirmed";
     key.classList.toggle("fault", !!current.outage);
     const log = $("log");
     log.replaceChildren();
@@ -694,10 +699,14 @@
     }
     bargeAudio.src = b.audio;
     bplay.disabled = false;
+    // The tests count a stop as on time within 0.2 s of the caller starting, so the verdict uses the same line.
+    const onTime = b.latency <= 0.2 + 1e-9;
     $("barge-text").textContent =
-      `A caller can talk over Parley and it stops. Here the caller’s next line (“${b.caller_text}”) was played over ` +
-      `Parley's ${Math.round(b.agent_full)} second list of viewings, through the same turn-taking code the ` +
-      `evaluation uses. The grey bars are what Parley never got to say.`;
+      `A caller can interrupt Parley, and Parley stops to listen. Here the caller says “${b.caller_text}” while ` +
+      `Parley reads a list of viewings that lasts ${Math.round(b.agent_full)} seconds. Parley went quiet ` +
+      `${round2(b.latency)} seconds after the caller started. ` +
+      (onTime ? "That is inside the limit the tests allow. " : "That is slower than the tests allow. ") +
+      `This example runs the same code as the tests. The grey bars show the words that Parley did not say.`;
     const stats = $("barge-stats");
     stats.replaceChildren();
     for (const [label, value, cls] of [["Caller starts", `${b.onset.toFixed(2)} s`, ""],
@@ -736,9 +745,17 @@
     const cells = [];
     for (const n of d.summary.tiles) {
       const row = el("div");
-      row.appendChild(el("dt", null, n.label));
+      const dt = el("dt");
+      dt.appendChild(el("span", "tile-label", n.label));
+      if (n.tag) {
+        const tag = el("code", "tile-tag", n.tag);
+        tag.translate = false;
+        dt.appendChild(tag);
+      }
+      row.appendChild(dt);
       const dd = el("dd", null, n.value);
       row.appendChild(dd);
+      if (n.verdict) row.appendChild(el("p", "verdict", n.verdict));
       dl.appendChild(row);
       cells.push([dd, n.value]);
     }
@@ -750,6 +767,17 @@
       cells.forEach(([dd, v]) => countUp(dd, v));
     }, { threshold: 0.4 });
     io.observe(dl);
+  }
+
+  // ---- theme flip ---------------------------------------------------------------
+
+  // The results read like a printed report, so the page turns to paper while they hold the middle of the screen.
+  // The tween lives in CSS on registered colour properties, and reduced motion drops the transition there.
+  const results = document.querySelector(".numbers");
+  if (results && "IntersectionObserver" in window) {
+    new IntersectionObserver((entries) => {
+      for (const e of entries) document.documentElement.classList.toggle("paper", e.isIntersecting);
+    }, { rootMargin: "-45% 0px -45% 0px" }).observe(results);
   }
 
   // ---- boot ---------------------------------------------------------------------

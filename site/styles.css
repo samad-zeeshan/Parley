@@ -1,4 +1,11 @@
 /* The phone line: a warm dark room, the caller in cream, Parley in one teal, faults in one red. */
+/* Registered so the page can tween from the dark room to paper. Unregistered custom properties only snap. */
+@property --bg { syntax: "<color>"; inherits: true; initial-value: #15110e; }
+@property --ink { syntax: "<color>"; inherits: true; initial-value: #f1e8da; }
+@property --ink-2 { syntax: "<color>"; inherits: true; initial-value: #bcae9b; }
+@property --ink-3 { syntax: "<color>"; inherits: true; initial-value: #928573; }
+@property --line { syntax: "<color>"; inherits: true; initial-value: #342b24; }
+@property --accent { syntax: "<color>"; inherits: true; initial-value: #5cc8b0; }
 :root {
   color-scheme: dark;
   --bg: #15110e;
@@ -26,12 +33,23 @@
   --gutter: 16px;
   --radius: 14px;
   --radius-sm: 8px;
+  transition: --bg 700ms var(--ease-out), --ink 700ms var(--ease-out), --ink-2 700ms var(--ease-out),
+              --ink-3 700ms var(--ease-out), --line 700ms var(--ease-out), --accent 700ms var(--ease-out);
+}
+/* The one theme flip: the results section turns the page to the caller's cream, with the dark room as ink. */
+:root.paper {
+  --bg: #ece2d0;
+  --ink: #15110e;
+  --ink-2: #3f352c;
+  --ink-3: #62564a;
+  --line: #cdbfa8;
+  --accent: #1d6e5d;
+}
+/* The player and the corner pill keep the dark room while the page flips under them. */
+.line, .source-pill {
+  --bg: #15110e; --ink: #f1e8da; --ink-2: #bcae9b; --ink-3: #928573; --line: #342b24; --accent: #5cc8b0;
 }
 @media (min-width: 760px) { :root { --gutter: 32px; } }
-/* The player stays in reach while the transcript scrolls, but only where it leaves room to read. */
-@media (min-width: 760px) and (min-height: 640px) {
-  .line { position: sticky; top: 0; }
-}
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -54,11 +72,26 @@ h2 { font-size: 1.35rem; letter-spacing: -0.015em; line-height: 1.2; font-variat
 p { margin: 0; text-wrap: pretty; }
 .hint { color: var(--ink-3); font-size: 0.875rem; max-width: 62ch; }
 
+/* Numbered by a counter, so the page source carries no digits and the order follows the markup. */
+main { counter-reset: eyebrow; }
+.eyebrow { counter-increment: eyebrow; margin: 0 0 10px; font: 500 0.6875rem/1.2 var(--mono); letter-spacing: 0.14em;
+           text-transform: uppercase; color: var(--ink-3); }
+.eyebrow::before { content: counter(eyebrow, decimal-leading-zero) " / "; color: var(--accent); }
+.line .eyebrow { margin-bottom: 8px; }
+
+.source-pill { position: fixed; top: 14px; right: var(--gutter); z-index: 5; display: inline-flex; align-items: center;
+               gap: 8px; min-height: 36px; padding: 0 16px; border-radius: 999px; background: var(--raised);
+               border: 1px solid var(--line-2); color: var(--ink); font: 500 0.875rem/1 var(--text); text-decoration: none;
+               box-shadow: 0 6px 18px rgba(5, 3, 2, 0.45); transition: background-color 200ms ease, transform 140ms var(--ease-out); }
+.source-pill::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.source-pill:hover { background: #2a221c; text-decoration: none; }
+.source-pill:active { transform: scale(0.97); }
+
 .skip { position: absolute; left: var(--gutter); top: -60px; z-index: 3; background: var(--accent); color: var(--accent-ink);
         padding: 10px 14px; border-radius: var(--radius-sm); font-weight: 600; text-decoration: none; }
 .skip:focus { top: 12px; }
 
-.masthead, main, .foot { max-width: 1180px; margin: 0 auto; padding-inline: var(--gutter); }
+.masthead, main { max-width: 1180px; margin: 0 auto; padding-inline: var(--gutter); }
 .masthead { padding-top: clamp(40px, 8vw, 88px); padding-bottom: 28px;
             display: grid; gap: 18px; align-items: end; }
 @media (min-width: 900px) { .masthead { grid-template-columns: auto 1fr; gap: 56px; } }
@@ -69,21 +102,28 @@ h1 { font-size: clamp(3.5rem, 11vw, 6rem); line-height: 0.9; letter-spacing: -0.
 /* ---- the call selector ---- */
 .line { position: relative; z-index: 2; background: var(--bg); padding: 14px 0 16px;
         border-bottom: 1px solid var(--line); }
+/* The player stays in reach while the transcript scrolls, but only where it leaves room to read.
+   The .stage wrapper ends with the transcript, so the player lets go before the barge-in and results. */
+@media (min-width: 760px) and (min-height: 640px) {
+  .line { position: sticky; top: 0; }
+}
 .dial { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0;
-        background: var(--sunk); border: 1px solid var(--line); border-radius: 999px; padding: 4px; max-width: 640px; }
+        background: var(--sunk); border: 1px solid var(--line); border-radius: 999px; padding: 4px; max-width: 960px; }
+/* Keep the fixed Source pill clear of the sticky selector on mid-width screens. */
+@media (min-width: 761px) and (max-width: 1040px) { .dial { max-width: calc(100% - 96px); } }
 .dial-thumb { position: absolute; top: 0; left: 0; width: 0; height: 0; border-radius: 999px;
               background: var(--raised); box-shadow: 0 1px 0 rgba(255, 240, 220, 0.06) inset, 0 4px 14px rgba(0, 0, 0, 0.35);
               pointer-events: none; opacity: 0; transition: background-color 200ms ease, opacity 200ms ease; }
 .dial[data-fault] .dial-thumb { background: #3a1f19; }
 .dial button { position: relative; font: 500 0.9375rem/1.2 var(--text); color: var(--ink-2); background: none; border: 0;
-               border-radius: 999px; min-height: 44px; padding: 8px 10px; cursor: pointer; white-space: nowrap;
+               border-radius: 999px; min-height: 44px; padding: 8px 12px; cursor: pointer; text-wrap: balance;
                transition: color 200ms ease, transform 140ms var(--ease-out); }
 .dial button:hover { color: var(--ink); }
 .dial button:active { transform: scale(0.97); }
 .dial button[aria-pressed="true"] { color: var(--ink); }
 .dial button.fault[aria-pressed="true"] { color: #ffd9cf; }
 .dial button:disabled { color: var(--ink-3); cursor: default; }
-@media (max-width: 520px) { .dial { grid-template-columns: repeat(2, minmax(0, 1fr)); border-radius: 26px; } }
+@media (max-width: 760px) { .dial { grid-template-columns: repeat(2, minmax(0, 1fr)); border-radius: 26px; } }
 
 .note { color: var(--ink-3); font-size: 0.875rem; margin-top: 10px; min-height: 1.6em; max-width: 90ch; }
 
@@ -133,7 +173,7 @@ h1 { font-size: clamp(3.5rem, 11vw, 6rem); line-height: 0.9; letter-spacing: -0.
 .log { position: relative; list-style: none; margin: 0; padding: 0 6px 0 0; max-height: min(72vh, 760px); overflow-y: auto;
        overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 /* Under the sticky player the transcript box ends at the bottom of the screen, so the spoken line stays in view. */
-@media (min-width: 760px) and (min-height: 640px) { .log { max-height: max(320px, calc(100dvh - 380px)); } }
+@media (min-width: 760px) and (min-height: 640px) { .log { max-height: max(320px, calc(100dvh - 410px)); } }
 .log-empty { color: var(--ink-3); font-size: 0.9375rem; padding: 22px 0; border-top: 1px dashed var(--line-2); }
 
 .turn { position: relative; padding: 14px 0 16px 18px; border-top: 1px solid var(--line);
@@ -194,7 +234,7 @@ h1 { font-size: clamp(3.5rem, 11vw, 6rem); line-height: 0.9; letter-spacing: -0.
 .checked { font: 400 0.75rem/1.4 var(--mono); color: var(--ink-3); margin-top: 6px; }
 
 .side { display: grid; gap: 28px; align-content: start; }
-@media (min-width: 980px) { .side { position: sticky; top: 196px; } }
+@media (min-width: 980px) { .side { position: sticky; top: 278px; align-self: start; } }
 
 .ticket { border-radius: var(--radius); padding: 18px 18px 20px; background: var(--raised);
           box-shadow: 0 1px 0 rgba(255, 240, 220, 0.05) inset, 0 12px 32px rgba(5, 3, 2, 0.45); }
@@ -218,10 +258,12 @@ h1 { font-size: clamp(3.5rem, 11vw, 6rem); line-height: 0.9; letter-spacing: -0.
 .audit .act { color: var(--ink); overflow-wrap: anywhere; }
 .audit .bad { color: var(--signal); }
 .audit .ok { color: var(--accent); }
+.ticket .label { display: block; margin-top: 14px; font: 500 0.6875rem/1.2 var(--mono); letter-spacing: 0.1em;
+                 text-transform: uppercase; color: var(--ink-3); }
 .ticket .recovery { margin-top: 12px; font-size: 0.9375rem; color: var(--ink-2); }
 
 .check h2 { font-size: 1.125rem; margin-bottom: 8px; }
-.check > p { color: var(--ink-2); font-size: 0.9375rem; }
+.check > p:not(.eyebrow) { color: var(--ink-2); font-size: 0.9375rem; }
 .switch { display: inline-flex; align-items: center; gap: 12px; margin-top: 14px; min-height: 44px; padding: 0;
           font: 500 0.9375rem/1.3 var(--text); color: var(--ink); background: none; border: 0; cursor: pointer; text-align: left; }
 .switch .track { position: relative; flex: none; width: 42px; height: 24px; border-radius: 999px; background: var(--line-2);
@@ -240,9 +282,11 @@ h1 { font-size: clamp(3.5rem, 11vw, 6rem); line-height: 0.9; letter-spacing: -0.
 .rejected .why { font: 400 0.8125rem/1.55 var(--mono); padding: 10px 12px; border-radius: var(--radius-sm);
                  background: var(--signal-soft); color: #ffd9cf; }
 .rejected .why code { font: inherit; color: var(--signal); }
+.rejected .why .stamp { display: block; margin-top: 4px; color: var(--ink-3); }
 .rejected .foot-note { color: var(--ink-3); font-size: 0.8125rem; }
 
 /* ---- barge-in ---- */
+.split, .barge, .numbers, .foot { background: var(--bg); }
 .barge { margin-top: 72px; padding-top: 36px; border-top: 1px solid var(--line); }
 .barge-head { display: grid; gap: 8px; max-width: 70ch; }
 .barge-text { color: var(--ink-2); }
@@ -256,21 +300,36 @@ h1 { font-size: clamp(3.5rem, 11vw, 6rem); line-height: 0.9; letter-spacing: -0.
 .barge-stats .stop dd { color: var(--signal); }
 
 /* ---- results ---- */
-.numbers { margin-top: 72px; padding-top: 36px; border-top: 1px solid var(--line); }
-.ledger { display: grid; margin: 20px 0 16px; }
-@media (min-width: 760px) { .ledger { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 48px; } }
-.ledger div { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 18px; align-items: baseline;
-              padding: 16px 0; border-top: 1px solid var(--line); }
-.ledger dt { order: 2; color: var(--ink-2); font-size: 0.9375rem; }
-.ledger dd { order: 1; margin: 0; font: 600 1.625rem/1 var(--display); letter-spacing: -0.02em;
-             font-variant-numeric: tabular-nums; font-variation-settings: "opsz" 48; white-space: nowrap; }
+.numbers { margin-top: 72px; padding: 36px 0 96px; border-top: 1px solid var(--line); }
+.numbers h2 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); }
+.ledger { display: grid; margin: 28px 0 20px; }
+@media (min-width: 760px) { .ledger { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 56px; } }
+.ledger > div { display: flex; flex-direction: column; gap: 10px; padding: 22px 0 26px; border-top: 1px solid var(--line); }
+.ledger dd { order: 1; margin: 0; font: 650 clamp(2.75rem, 6vw, 4.25rem)/0.95 var(--display); letter-spacing: -0.035em;
+             font-variant-numeric: tabular-nums; font-variation-settings: "opsz" 96; white-space: nowrap; }
+.ledger dt { order: 2; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; color: var(--ink);
+             font-weight: 500; font-size: 1rem; line-height: 1.4; }
+.tile-tag { font: 400 0.6875rem/1.4 var(--mono); color: var(--ink-3); border: 1px solid var(--line); border-radius: 4px;
+            padding: 0 6px; }
+.verdict { order: 3; color: var(--ink-2); font-size: 0.9375rem; max-width: 46ch; }
 
 .load-error { margin-top: 24px; padding: 12px 14px; border-radius: var(--radius-sm); background: var(--signal-soft); color: #ffd9cf; }
-.foot { padding-top: 56px; padding-bottom: 56px; color: var(--ink-3); font-size: 0.875rem; }
-.foot p { max-width: 80ch; }
+/* ---- footer, the second hero ---- */
+.foot { padding: 96px 0 40px; border-top: 1px solid var(--line); color: var(--ink-2); overflow: hidden; }
+.foot-inner { max-width: 1180px; margin: 0 auto; padding-inline: var(--gutter); }
+.foot-voice { font: 500 clamp(1.25rem, 2.6vw, 1.9rem)/1.25 var(--display); color: var(--ink); max-width: 30ch;
+              letter-spacing: -0.015em; }
+/* Sized off the viewport so the name spans the page at any width and still fits at 390 px. */
+.wordmark { margin: 24px 0 0.24em -0.04em; font: 700 min(37vw, 28.5rem)/0.8 var(--display); letter-spacing: -0.055em;
+            font-variation-settings: "opsz" 96; color: var(--accent); white-space: nowrap; }
+.foot-cols { display: grid; gap: 14px 48px; font-size: 0.9375rem; padding-top: 20px; border-top: 1px solid var(--line); }
+@media (min-width: 900px) { .foot-cols { grid-template-columns: minmax(0, 2fr) auto auto; align-items: start; } }
+.foot-cols p { max-width: 62ch; }
+.licence { color: var(--ink-3); font-family: var(--mono); font-size: 0.8125rem; }
 
 @media (hover: none) { .play:hover { background: var(--accent); } }
 @media (prefers-reduced-motion: reduce) {
+  :root { transition: none; }
   .turn, .turn.on { transform: none; transition: opacity 160ms ease, visibility 0s; }
   .src, .turn.on .src { transform: none; transition: opacity 160ms ease; transition-delay: 0s; }
   .fact { transition: none; }

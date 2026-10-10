@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Parley: a phone agent for property viewings</title>
-<meta name="description" content="Recorded calls to Parley, a phone agent that books property viewings in English, Gulf Arabic or both in one sentence. Every fact it speaks is traced to the booking API call it came from.">
+<meta name="description" content="This page plays recorded calls to Parley, a phone agent that books property viewings in English, Gulf Arabic or both in one sentence. The page shows where each fact that Parley speaks came from.">
 <meta name="theme-color" content="#15110e">
 <meta property="og:title" content="Parley: a phone agent for property viewings">
-<meta property="og:description" content="Recorded calls in English, Gulf Arabic and both at once, with every spoken fact traced to its API call.">
+<meta property="og:description" content="Listen to recorded calls in English, Gulf Arabic and both at once. The page shows where each spoken fact came from.">
 <meta property="og:type" content="website">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,27 +17,30 @@
 </head>
 <body>
 <a class="skip" href="#line">Skip to the calls</a>
+<a class="source-pill" href="https://github.com/samad-zeeshan/Parley">Source</a>
 
 <header class="masthead">
   <h1 translate="no">Parley</h1>
   <p class="lede">Parley answers the phone for a property agency, in English, Gulf Arabic or both in one sentence.
-    It books a viewing, only says prices and addresses the listings database returned, and works with no internet
-    connection. Pick a call and press play.</p>
+    It books a viewing, only says prices and addresses that came from the agency's own listings, and works with no
+    internet connection. Pick a call and press play.</p>
 </header>
 
 <main>
+  <div class="stage">
   <section id="line" class="line" aria-label="Recorded calls">
+    <p class="eyebrow" aria-hidden="true">Pick a call</p>
     <div class="dial" role="group" aria-label="Pick a call">
       <span class="dial-thumb" aria-hidden="true"></span>
-      <button type="button" data-call="english" aria-pressed="false">English</button>
-      <button type="button" data-call="arabic" aria-pressed="false">Arabic</button>
-      <button type="button" data-call="switched" aria-pressed="false">Code-switched</button>
-      <button type="button" data-call="outage" aria-pressed="false" class="fault">Tool outage</button>
+      <button type="button" data-call="english" data-demo="call-en" aria-pressed="false">English</button>
+      <button type="button" data-call="arabic" data-demo="call-ar" aria-pressed="false">Arabic</button>
+      <button type="button" data-call="switched" aria-pressed="false">Both languages in one call</button>
+      <button type="button" data-call="outage" data-demo="call-outage" aria-pressed="false" class="fault">Booking system fails mid-call</button>
     </div>
     <p id="note" class="note"></p>
 
     <div class="deck">
-      <button type="button" id="play" class="play" aria-label="Play" disabled>
+      <button type="button" id="play" class="play" data-demo="play" aria-label="Play" disabled>
         <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
         <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
         <span class="spinner" aria-hidden="true"></span>
@@ -57,24 +60,29 @@
 
   <div class="split">
     <section class="transcript" aria-labelledby="transcript-h">
+      <p class="eyebrow" aria-hidden="true">What was said</p>
       <h2 id="transcript-h">Transcript</h2>
-      <p class="hint">Caller lines show what the speech recognizer heard. Facts Parley speaks are underlined, and
-        each one is stamped with the booking API call that returned it.</p>
+      <p class="hint">Caller lines show what Parley heard, which is not always what the caller said. The page
+        underlines every fact that Parley speaks. The tag under it shows which answer from the booking system it came
+        from.</p>
       <ol id="log" class="log" aria-live="polite"></ol>
-      <p id="log-empty" class="log-empty">Press play. Each line appears as it is spoken.</p>
+      <p id="log-empty" class="log-empty">Press play. Each line appears when someone speaks it.</p>
     </section>
 
     <aside class="side">
       <section id="card" class="ticket" data-state="pending" aria-live="polite" aria-labelledby="card-h">
+        <p class="eyebrow" aria-hidden="true">The booking</p>
         <h2 id="card-h">Booking</h2>
         <div id="card-body"></div>
       </section>
 
       <section class="check" aria-labelledby="check-h">
-        <h2 id="check-h">Grounding check</h2>
-        <p>Before anything is spoken, every date, time, price, phone number, area and tower in the reply is
-          compared with what the booking API returned in this call.</p>
-        <button type="button" id="show-rejected" class="switch" role="switch" aria-checked="false"
+        <p class="eyebrow" aria-hidden="true">Fact check</p>
+        <h2 id="check-h">Every fact is checked first</h2>
+        <p>Before Parley speaks, it checks each fact in its reply, such as a date, a price or a phone number. Each
+          fact must match what the booking system told it during this call. If a fact does not match, Parley does not
+          use that reply.</p>
+        <button type="button" id="show-rejected" class="switch" data-demo="rejected" role="switch" aria-checked="false"
                 aria-controls="rejected">
           <span class="track" aria-hidden="true"><span class="knob"></span></span>
           <span>Show a reply it rejected</span>
@@ -83,10 +91,12 @@
       </section>
     </aside>
   </div>
+  </div>
 
   <section class="barge" aria-labelledby="barge-h">
     <div class="barge-head">
-      <h2 id="barge-h">Talking over Parley</h2>
+      <p class="eyebrow" aria-hidden="true">Interruptions</p>
+      <h2 id="barge-h">Caller interrupts Parley</h2>
       <p id="barge-text" class="barge-text"></p>
     </div>
     <div class="barge-deck">
@@ -95,13 +105,14 @@
         <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
         <span class="spinner" aria-hidden="true"></span>
       </button>
-      <canvas id="barge-wave" class="barge-wave" role="img" aria-label="Parley's waveform stops shortly after the caller starts talking"></canvas>
+      <canvas id="barge-wave" class="barge-wave" role="img" aria-label="Parley's waveform stops soon after the caller starts to talk"></canvas>
     </div>
     <dl id="barge-stats" class="barge-stats"></dl>
   </section>
 
   <section class="numbers" aria-labelledby="numbers-h">
-    <h2 id="numbers-h">From the evaluation</h2>
+    <p class="eyebrow" aria-hidden="true">Results</p>
+    <h2 id="numbers-h">How it did in the tests</h2>
     <dl id="numbers" class="ledger"></dl>
     <p class="hint" id="numbers-note"></p>
   </section>
@@ -111,9 +122,16 @@
 </main>
 
 <footer class="foot">
-  <p>These are recorded runs from the evaluation, replayed. Every voice is synthetic, and every listing, agent and
-    phone number is made up. There is no live line: nothing here talks to a server.
-    <a href="https://github.com/samad-zeeshan/Parley">Source and results</a></p>
+  <div class="foot-inner">
+    <p class="foot-voice">It books the viewing, and it never says a price it cannot trace.</p>
+    <p class="wordmark" aria-hidden="true" translate="no">Parley</p>
+    <div class="foot-cols">
+      <p>Every call on this page is a recorded run from the tests, and your browser plays it again. Every voice is
+        synthetic. Every listing, agent and phone number is fictional. This page does not connect to a server.</p>
+      <p><a href="https://github.com/samad-zeeshan/Parley">Source code and full results on GitHub</a></p>
+      <p class="licence">MIT licence</p>
+    </div>
+  </div>
 </footer>
 <script src="app.js"></script>
 </body>
