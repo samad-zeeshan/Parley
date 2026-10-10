@@ -128,6 +128,22 @@ def test_no_filler_words_or_heavy_punctuation():
         assert "—" not in s and ";" not in s, s[:120]
 
 
+# A rough passive check: a form of "be", at most one word, then a past participle.
+# It misses passives without "be" and flags some adjectives, so the allowlist below holds the misses we accept.
+PARTICIPLE = r"\w+ed|made|done|found|given|held|kept|left|run|seen|sent|shown|taken|written|built|caught"
+PASSIVE = re.compile(rf"\b(?:is|are|was|were|be|been|being)\s+(?:\w+\s+)?(?:{PARTICIPLE})\b", re.I)
+PASSIVE_OK = {
+    # None today. Add a sentence here only with a one-line reason why active voice reads worse.
+}
+
+
+def test_no_passive_voice():
+    for s in reader_strings() + page_strings() + readme_prose():
+        for sentence in sentences(s):
+            if sentence not in PASSIVE_OK:
+                assert not PASSIVE.search(sentence), sentence
+
+
 def test_every_recorder_step_has_a_selector():
     html = (SITE / "index.html").read_text(encoding="utf-8")
     for name in ["call-en", "call-ar", "call-outage", "rejected"]:
