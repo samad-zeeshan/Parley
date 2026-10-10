@@ -31,11 +31,11 @@ ARABIC = re.compile(r"[؀-ۿ]")
 VOICE = "A synthetic voice speaks the caller's lines. "
 HEARD = "Caller lines show what Parley heard. If that is different from the script, the script line appears under it."
 NOTES = {
-    "english": "This is a scripted English booking call. " + VOICE + "Parley uses its offline speech setup, which "
+    "english": "This English booking call follows a script. " + VOICE + "Parley uses its offline speech setup, which "
                "needs no internet. " + HEARD,
-    "arabic": "This is a scripted Gulf Arabic booking call. " + VOICE + "Parley uses its offline speech setup, which "
+    "arabic": "This Gulf Arabic booking call follows a script. " + VOICE + "Parley uses its offline speech setup, which "
               "needs no internet. " + HEARD,
-    "switched": "This scripted call moves between Gulf Arabic and English. " + VOICE + "Parley uses a second "
+    "switched": "This call follows a script and moves between Gulf Arabic and English. " + VOICE + "Parley uses a second "
                 "offline setup, which listens to each part between pauses on its own. " + HEARD,
 }
 
@@ -121,7 +121,7 @@ def grounding_example() -> dict | None:
     return {"call_id": cid,
             "intro": f"This reply comes from a recorded {'Arabic' if ARABIC.search(t['reply']) else 'English'} "
                      "call. A language model on the same computer reworded the booking confirmation and got a fact "
-                     "wrong. The fact check caught it, so Parley said its fixed wording instead.",
+                     "wrong. The fact check caught it, so Parley said its own checked words instead.",
             "model_reply": t["rejected_text"], "flagged": ", ".join(sorted(set(t["rejected"]))),
             "spoken": t["reply"],
             "footnote": "Before the comparison, the check changes dates, times and prices written as words into "
@@ -182,7 +182,7 @@ def main() -> None:
                  "completed": out["completed"], "card_at": card_at, "booking": None, "outage": None}
         if noisy:
             entry["note"] = ("This is the same English call, but the booking system does not answer when Parley "
-                             "tries to confirm. Parley tells the caller, does not claim the viewing is booked, and "
+                             "tries to confirm. Parley tells the caller, does not claim that the booking worked, and "
                              "arranges a call back.")
             entry["outage"] = {"title": "Not booked, and Parley said so",
                                "lines": ["The booking system did not answer when Parley tried to confirm, even "

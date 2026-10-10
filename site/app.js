@@ -301,7 +301,7 @@
     box.appendChild(why);
 
     const spoken = el("div");
-    spoken.appendChild(el("span", "label", "Parley said its fixed, checked wording instead"));
+    spoken.appendChild(el("span", "label", "Parley said its own checked words instead"));
     const sp = el("p");
     scriptText(sp, g.spoken);
     spoken.appendChild(sp);
@@ -572,7 +572,7 @@
     wave.setAttribute("aria-valuemax", String(Math.round(current.duration)));
     const key = $("event-key");
     key.hidden = current.card_at == null;
-    key.textContent = current.outage ? "Booking system stops answering" : "Booking confirmed";
+    key.textContent = current.outage ? "Booking system does not answer" : "Booking confirmed";
     key.classList.toggle("fault", !!current.outage);
     const log = $("log");
     log.replaceChildren();
