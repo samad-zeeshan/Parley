@@ -4,6 +4,8 @@ Parley answers the phone for a property agency in English, Gulf Arabic or both i
 
 **Demo:** [samad-zeeshan.github.io/Parley](https://samad-zeeshan.github.io/Parley/) plays recorded calls in English, in Arabic and in a mix of both. In one more call, the booking system fails in the middle of the call. The page marks each fact that Parley speaks with the booking system call that it came from. A longer video is in [docs/demo.mp4](docs/demo.mp4).
 
+A 30-second explainer video is in [docs/explainer.mp4](docs/explainer.mp4).
+
 ![An Arabic call in the demo ends with a confirmed booking](docs/demo.gif)
 
 ## How it works
