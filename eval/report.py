@@ -162,8 +162,8 @@ def rubric_sentence(r: dict) -> str:
     pens = ", ".join(f"{k.replace('_', ' ')} {v}" for k, v in sorted(m["penalties"].items(), key=lambda kv: -kv[1]))
     return (f"A Gulf dialect rubric (arXiv 2608.29990) gave each reply a calibrated score out of 1. "
             f"The fixed replies of Parley scored {_f(t['mean_score_calibrated'])} over {t['replies']} replies. "
-            f"The 9B rewordings scored {_f(m['mean_score_calibrated'])} over {m['replies']} replies. "
-            f"The rewordings lost points for {pens}. The judge model {rb['judge']} agreed with {c['anchors']} "
+            f"The replies that the 9B model reworded scored {_f(m['mean_score_calibrated'])} over {m['replies']} replies. "
+            f"The reworded replies lost points for {pens}. The judge model {rb['judge']} agreed with {c['anchors']} "
             f"labelled examples on {_f(c['criterion_agreement'])} of the criteria. "
             + ("A native speaker checked a sample of the scores." if rb["spot_check"]["done"]
                else "No native speaker checked the scores yet."))

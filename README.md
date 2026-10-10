@@ -1,10 +1,8 @@
 # Parley
 
-Parley answers the phone for a property agency in English, Gulf Arabic or both in one sentence. It books a
-viewing. It only says prices and addresses that came from the listings database. It works with no internet
-connection.
+Parley answers the phone for a property agency in English, Gulf Arabic or both in one sentence. It books a viewing. It only says prices and addresses that came from the listings database. It works with no internet connection.
 
-**Demo:** [samad-zeeshan.github.io/Parley](https://samad-zeeshan.github.io/Parley/) plays recorded calls in English, in Arabic and in a mix of both. In one more call, the booking system fails in the middle of the call. The page marks each fact that Parley speaks with the booking system call that it came from. A longer recording is in [docs/demo.mp4](docs/demo.mp4).
+**Demo:** [samad-zeeshan.github.io/Parley](https://samad-zeeshan.github.io/Parley/) plays recorded calls in English, in Arabic and in a mix of both. In one more call, the booking system fails in the middle of the call. The page marks each fact that Parley speaks with the booking system call that it came from. A longer video is in [docs/demo.mp4](docs/demo.mp4).
 
 ![An Arabic call in the demo ends with a confirmed booking](docs/demo.gif)
 
@@ -23,23 +21,15 @@ The tests play the same scripted calls again with noise in the audio, errors in 
 
 ## Design decisions
 - The offline setup `local` uses faster-whisper small and Piper on one CPU. A customer can run it today with no network and no fee per minute. The cloud setup `hosted` has a column in every table. It has no client or credentials yet, so its cells say "not run".
-- No model decides the next step or chooses a booking detail. Replies come from fixed templates. A model on the same computer can reword a reply. Parley drops any rewording with a fact that the booking system did not give.
+- No model decides the next step or chooses a booking detail. Replies come from fixed templates. A model on the same computer can reword a reply. If a reworded reply holds a fact that the booking system did not give, Parley drops it.
 - If the booking system is slow, down or gives answers that do not agree, Parley says that it cannot confirm. It does not claim that the booking worked or failed. It arranges a call back.
 - Sometimes a caller turn arrives as two messages. Parley joins them before it reads the turn. This change fixed split turns, but results got a little worse when transcripts had many errors. The tables show both results.
 - The first speech prompt stays the default. The prompt for both languages, "mixed prompt" in the tables, keeps English words correct. But it loses Arabic words.
 
 ## Results
-The tests use scripted calls on one laptop CPU. The calls come in four kinds:
-- English
-- Gulf Arabic
-- Modern Standard Arabic (MSA)
-- both languages, which means Gulf Arabic and English in one call
+The tests use scripted calls on one laptop CPU. The calls are in English, in Arabic or in both languages. The Arabic calls use Gulf Arabic or Modern Standard Arabic (MSA). A call in both languages mixes Gulf Arabic and English. All caller voices are synthetic. The only offline Arabic voice is Jordanian, so the Gulf rows test Gulf words, not a Gulf accent.
 
-All caller voices are synthetic. The only offline Arabic voice is Jordanian, so the Gulf rows test Gulf words, not a Gulf accent.
-
-The tests use no real dialect audio. The project found no public release of Bulbul, and the NADI 2026 sets state no licence.
-
-The tables come from `eval/results.json`, and the first-version figures come from `eval/results_v1.json`. CI fails if the tables and the files do not match.
+The tests use no real dialect audio. The project found no public release of Bulbul, and the NADI 2026 sets state no licence. The tables come from `eval/results.json`, and the first-version figures come from `eval/results_v1.json`. CI fails if the tables and the files do not match.
 
 <!-- results:begin -->
 This table counts the calls that the scripted callers booked with the rule parser.
@@ -100,20 +90,14 @@ This table shows how long Parley took to reply on the development CPU, for all t
 
 The tests made the booking system fail in 6 ways, on the reference text (arXiv 2608.02372, 2606.31307). Calls booked with no failure and per failure: clean 38/40, slow 9/40, empty 0/40, contradictory 0/40, contradictory-confirm 38/40, down 0/40, down-at-confirm 0/40. Parley spoke 0 false facts in all of these runs. Of the calls that hit a failure, Parley handled 232/232 safely. It arranged 78 call backs. Cloud: not run.
 
-A Gulf dialect rubric (arXiv 2608.29990) gave each reply a calibrated score out of 1. The fixed replies of Parley scored 0.917 over 19 replies. The 9B rewordings scored 0.679 over 40 replies. The rewordings lost points for register flattening 24, wrong dialect 22, hallucination 10, ambiguous framing 3. The judge model qwen/qwen3.6-35b-a3b agreed with 13 labelled examples on 0.815 of the criteria. No native speaker checked the scores yet.
+A Gulf dialect rubric (arXiv 2608.29990) gave each reply a calibrated score out of 1. The fixed replies of Parley scored 0.917 over 19 replies. The replies that the 9B model reworded scored 0.679 over 40 replies. The reworded replies lost points for register flattening 24, wrong dialect 22, hallucination 10, ambiguous framing 3. The judge model qwen/qwen3.6-35b-a3b agreed with 13 labelled examples on 0.815 of the criteria. No native speaker checked the scores yet.
 
 When a caller interrupted, Parley stopped within 0.2 s in these cases: English 77/82, Gulf 117/121, MSA 132/139, both languages 136/146. The first version scored English 5/6, Gulf 10/11, MSA 17/18, both languages 22/22. The slowest stop took 0.40 s. Parley stopped 0 times because of the echo of its own voice.
 <!-- results:end -->
 
-The fact check held in every run and in every booking system failure. Parley never spoke a fact that the booking system did not give.
+The fact check held in every run and in every booking system failure. Parley never spoke a fact that the booking system did not give. Many Arabic calls and nearly all calls in both languages still fail because speech recognition gets words wrong. The one success in both languages depends on the pauses that a synthetic caller leaves between languages. No offline setup is both fast and accurate. Only the small Whisper models meet the target for reply time, and they book the fewest calls.
 
-Many Arabic calls and nearly all calls in both languages still fail because speech recognition gets words wrong. The one success in both languages depends on the pauses that a synthetic caller leaves between languages.
-
-No offline setup is both fast and accurate. Only the small Whisper models meet the target for reply time, and they book the fewest calls.
-
-Noise hurts Gulf Arabic calls the most. A second person who talks in the background causes the most wrong actions.
-
-On calls in both languages, Parley stopped on time less often than the first version, but the new sample is far larger. No native speaker checked the rubric judge yet, so its scores are only a rough guide.
+Noise hurts Gulf Arabic calls the most. A second person who talks in the background causes the most wrong actions. On calls in both languages, Parley stopped on time less often than the first version, but the new sample is far larger. No native speaker checked the rubric judge yet, so its scores are only a rough guide.
 
 ## Run it
 ```
@@ -123,8 +107,8 @@ uv run --extra speech uvicorn api.server:app --port 8000          # push-to-talk
 ```
 
 ## Papers
-- Evaluation: arXiv 2609.20152 (MTVA-Bench), 2609.29452 (acoustic stress, TRACE), 2605.19069 (code-switching ASR), 2609.21084 (digit error rates)
-- Dialect and judging: arXiv 2608.29990 (Saudi dialect rubric), 2609.29431 (calibrating LLM judges), 2605.16364 (WASIL, real Arabic speech turns)
+- Evaluation: arXiv 2609.20152 (MTVA-Bench), 2609.29452 (acoustic stress, TRACE), 2605.19069 (speech recognition for mixed languages), 2609.21084 (digit error rates)
+- Dialect and judges: arXiv 2608.29990 (Saudi dialect rubric), 2609.29431 (calibration of LLM judges), 2605.16364 (WASIL, real Arabic speech turns)
 - Failures and turn taking: arXiv 2608.02372 (PredAct-Bench), 2606.31307 (safe recovery when the database fails), 2609.03321 (finite-state turn taking)
 - Models and data: arXiv 2609.23959, 2609.26550 (Jev decisions), 2609.25176, 2609.11892, 2609.27086, 2609.24410, 2609.03423, 2609.23955, 2608.21950, 2604.14186
 
